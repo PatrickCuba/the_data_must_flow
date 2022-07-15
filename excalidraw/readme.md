@@ -4,6 +4,6 @@ For now you'll need to download and install these diagrams but it should be inte
 
 
 <img src="./Excalidraw.png" alt="Full suite"
-  title="artefacts" width="150" height="150" /><br>
+  title="artefacts"  /><br>
   
   
