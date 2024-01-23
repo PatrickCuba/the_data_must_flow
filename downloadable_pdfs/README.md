@@ -201,44 +201,49 @@ Facing the same problems every data platform face is the challenge of making cha
 
 ## Data Vault Naming Standards
 Theory behind what naming standards should look like	
-[Medium.com](https://bit.ly/3GMnT8O
-bit.ly/3iQpEJX
+[Medium.com](https://bit.ly/3GMnT8O)
+[Linkedin.com](https://bit.ly/3iQpEJX)
+[PDF](./Data%20Vault%20table%20and%20column%20Naming%20Standards.pdf)
 
 ## A Rose by any other name… Wait.. is it still the same Rose? 
 Initially this article was released on Valentine’s Day, it delves into Passive Integration and Business Key Collision Codes by way of an example.	
-[Medium.com](https://bit.ly/3xlFK0s
-bit.ly/3BIziSh
-bit.ly/371PykS
+[Medium.com](https://bit.ly/3xlFK0s)
+[Linkedin.com](https://bit.ly/3BIziSh)
+[DataVaultAlliance.com](https://bit.ly/371PykS)
+[PDF](./A%20rose%20by%20any%20other%20name.pdf)
 
 ## The Data Vault Guru: a pragmatic guide on building a data vault
 A summary of what is in the book	
-[Medium.com](https://bit.ly/3bcayaO
-bit.ly/3tXoyNK
+[Medium.com](https://bit.ly/3bcayaO)
+[Linkedin.com](https://bit.ly/3tXoyNK)
+[PDF](./The%20Data%20Vault%20Guru.pdf)
 
 ## Data Vault has a new Hero
 Originally titled “Solving Time Crime in Data Vault 2.0”; this article delves into how to deal with batch data that arrives out of sequence; this is an authorised extension of the DV2.0 standards called the eXtended Record Tracking Satellite (XTS). A data driven approach to dynamically enable the DV model to self-heal.	
-[Medium.com](https://bit.ly/3y4mUdV
-bit.ly/39jjf19
-bit.ly/3dlVDJn
+[Medium.com](https://bit.ly/3y4mUdV)
+[Linkedin.com](https://bit.ly/39jjf19)
+[DataVaultAlliance.com](https://bit.ly/3dlVDJn)
+[PDF](./time%20crime.pdf)
 
 ## How I can get away without paying the Pied Piper... in Data Vault 2.0
 What you learn on DV2.0 training is that a Data Vault model is not easy to query, to make it easier and to support your Information Models you build Point-in-Time and/or Bridge tables but the expense of querying the data vault is pushed to the creation of the PIT tables themselves. But what if you don’t have to?	
-[Medium.com](https://bit.ly/3mNxuD9
-bit.ly/3iBfAzh
+[Medium.com](https://bit.ly/3mNxuD9)
+[Linkedin.com](https://bit.ly/3iBfAzh)
 
 ## Business Key Treatments
 What do you do when a source provides business keys that don’t quite follow the standard business key assignment best practices? An approach to ensure passive integration without sacrificing automation.	
-[Medium.com](https://bit.ly/2YnlSh0
-bit.ly/3pgNJaK
+[Medium.com](https://bit.ly/2YnlSh0)
+[Linkedin.com](https://bit.ly/3pgNJaK)
+[PDF](./business%20key%20treatments%20-%20NE.pdf)
 
 ## What does dbt give you?
 A gloss over dbt and its power of transformation	
-[Medium.com](https://bit.ly/3kyExhZ
-bit.ly/3ok9PsF
+[Medium.com](https://bit.ly/3kyExhZ)
+[Linkedin.com](https://bit.ly/3ok9PsF)
 
 ## Passive integration explained…
 Another take on explaining passive integration	
-[Medium.com](https://bit.ly/3pTWCXP
+[Linkedin.com](https://bit.ly/3pTWCXP)
 
 ## Data Vault on Snowflake
 
