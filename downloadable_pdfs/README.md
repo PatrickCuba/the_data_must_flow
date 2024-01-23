@@ -15,37 +15,43 @@ Highlighting what DV2.0 gives more than any other interpretation of DV
 All it takes are three or four “things” to start any learning journey, your cognitive load. At the time of writing the article I was learning how to make beer!	
 [Medium.com](https://bit.ly/2ZYGpJP)
 [Linkedin.com](https://bit.ly/3GwZ12r)
+[PDF](./Learning%20Data%20Vault%20Modelling.pdf)
 
 ## Data Vault or: how I learnt to stop worrying and love Data Governance
 Following an Atomic Space Age theme, a glimpse into Data Vault with DataOps	
 [Medium.com](https://bit.ly/3vhEDxJ)
 [Linkedin.com](https://bit.ly/35xhVGL)
+[PDF](./dr-strangelove.pdf)
 
 ## Time to upgrade your thinking on Data Vault
 Data Vault is more than just a data modelling methodology, it is designed to change and flex as the business evolves and matures around core business capabilities	
-[Medium.com](https://bit.ly/3fUL7fN
-bit.ly/335dqW1
+[Medium.com](https://bit.ly/3fUL7fN)
+[Linkedin.com](https://bit.ly/335dqW1)
+[PDF](./business_arch_to_data_vault.pdf)
 
 ## Data Vault Recipes
 A holistic look at what it means to adopt Data Vault 2.0 methodology, inspired by baking of course!	
-[Medium.com](https://bit.ly/2WEWCSw
-bit.ly/3gM1k7H
+[Medium.com](https://bit.ly/2WEWCSw)
+[Linkedin.com](https://bit.ly/3gM1k7H)
+[PDF](./baking.pdf)
 
 ## a DATA VAULT ANALOGY
 Data Vault in the industry has two standards, one following the Hans Hultgren method (Ensemble Modelling) and the other follows Dan Linstedt (Data Vault 2.0). Sometimes the terms of the two are confused and to the untrained eye it is difficult to tell who is following which method, which of course adds to the confusion of learning about Data Vault. Ensemble tends to lean towards replacing Kimball, Data Vault 2.0 does not - instead DV2.0 keeps the patterns simple and repeatable.
 The art was inspired by “in the land of the blind the one-eyed man is king” proverb.	
-[Medium.com](https://bit.ly/39o9qPX
-bit.ly/3so8qo3
+[Medium.com](https://bit.ly/39o9qPX)
+[Linkedin.com](https://bit.ly/3so8qo3)
 
 ## Data Vault Elevator Pitch
 One’s point of view is usually biased toward their own interests, and it is the same when you pitch a Data Vault to different professions within a business.	
-[Medium.com](https://bit.ly/2RyoRjv
-bit.ly/3qSmjIz
+[Medium.com](https://bit.ly/2RyoRjv)
+[Linkedin.com](https://bit.ly/3qSmjIz)
+[PDF](./Elevator%20Pitch.pdf)
 
 ## Data Vault Dream Team
 Ideas on how to get a Data Vault project started and build momentum	
-[Medium.com](https://bit.ly/3uHne3N
-bit.ly/33bU2qn
+[Medium.com](https://bit.ly/3uHne3N)
+[Linkedin.com](https://bit.ly/33bU2qn)
+[PDF](./Dream%20Team%20for%20Data%20Vault%20Delivery.pdf)
 
 ## Building Data Vault modelling capability through the Mob
 How to go about modelling your Data Vault through collaboration and having the right people in the right place. Inspired by work done at a major customer and extreme programming principles	
