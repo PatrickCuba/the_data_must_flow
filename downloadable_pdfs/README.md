@@ -252,121 +252,121 @@ Why Snowflake is well suited for Data Vault
 [Snowflake.com](https://bit.ly/3JeRY2P)
 [Medium.com](https://bit.ly/38fAy6H)
 [Linkedin.com](https://bit.ly/3P98LWr)
-[PDF](./Episode1-Immutable-storage.pdf)
+[COMING SOON](./Episode1-Immutable-storage.pdf)
 
 ### Ep2: Snowsight dashboards for Data Vault
 Using Snowsight for Data Observability over a Data Vault	
 [Snowflake.com](https://bit.ly/3QPhM7T)
 [Medium.com](https://bit.ly/3bLgtXj)
 [Linkedin.com](https://bit.ly/3bSZTEY)
-[PDF](./Episode2-snowsight-dashboard.pdf)
+[COMING SOON](./Episode2-snowsight-dashboard.pdf)
 
 ### Ep3: Point-in-Time constructs & Join Trees
 How to build PIT tables to solve getting data out of a Data Vault	
 [Snowflake.com](https://bit.ly/3wfCBAG)
 [Medium.com](https://bit.ly/3PNZJgr)
 [Linkedin.com](https://bit.ly/3pHEbaN)
-[PDF](./Episode3-pits.pdf)
+[COMING SOON](./Episode3-pits.pdf)
 
 ### Ep4: Querying really BIG satellite tables
 A look at how to use Dynamic Pruning to solve querying of really big satellite tables	
 [Snowflake.com](https://bit.ly/3BcuRkE)
 [Medium.com](https://bit.ly/3eWpEpv)
 [Linkedin.com](https://bit.ly/3xxk6s0)
-[PDF](./Episode4-dynamic_pruning.pdf)
+[COMING SOON](./Episode4-dynamic_pruning.pdf)
 
 ### Ep5: Streams & Tasks on Views
 Animated version of Kappa Vault	
 [Snowflake.com](https://bit.ly/3Smfi0u)
 [Medium.com](https://bit.ly/3BJDJ1r)
 [Linkedin.com](https://bit.ly/3SCdO2A)
-[PDF](./Episode5-kappa_vault.pdf)
+[COMING SOON](./Episode5-kappa_vault.pdf)
 
 ### Ep6: Conditional Multi-Table INSERT, and where to use it
 Another look at building PIT Flow Manifold	
 [Snowflake.com](https://bit.ly/3C9YPHw)
 [Medium.com](https://bit.ly/3y8NHIA)
 [Linkedin.com](https://bit.ly/3ybXZb5)
-[PDF](./Episode6-pitflow_manifold.pdf)
+[COMING SOON](./Episode6-pitflow_manifold.pdf)
 
 ### Ep7: Row Access Policies + Multi-Tenancy
 How to combine multi-tenancy in Data Vault with Row Access Policies	
 [Snowflake.com](https://bit.ly/3CwfOmf)
 [Medium.com](https://bit.ly/3VxqvxD)
 [Linkedin.com](https://bit.ly/3yHfdNC)
-[PDF](./Episode7-multi-tenancy.pdf)
+[COMING SOON](./Episode7-multi-tenancy.pdf)
 
 ### Ep8: Hub locking on Snowflake
 An interactive look at hub table locking in Snowflake, transaction isolation levels	
 [Snowflake.com](https://bit.ly/3WbxsVo)
 [Medium.com](https://bit.ly/3DXbDlL)
 [Linkedin.com](https://bit.ly/3DK1mJj)
-[PDF](./Episode8-hub_locking.pdf)
+[COMING SOON](./Episode8-hub_locking.pdf)
 
 ### Ep10: Virtual Warehouses & Charge Back
 An approach on how to deploy your data architecture to suite Data Vault and a Charge-back model	
 [Snowflake.com](https://bit.ly/3EsV2F7)
 [Medium.com](https://bit.ly/3VdKdO7)
 [Linkedin.com](https://bit.ly/3gn0phc)
-[PDF](./Episode10-charge_back.pdf)
+[COMING SOON](./Episode10-charge_back.pdf)
 
 ### Ep9: Out-of-sequence data
 How do you handle data that arrives out of sequence dynamically and without needing to replay your loads?	
 [Snowflake.com](https://bit.ly/3WsRjzD)
 [Medium.com](https://bit.ly/3TffRJJ)
 [Linkedin.com](https://bit.ly/3zTz0dt)
-[PDF](./Episode09-out-of-sequence-data.pdf)
+[COMING SOON](./Episode09-out-of-sequence-data.pdf)
 
 ### [BONUS] Episode 11: Handling Semi-Structured Data 
 An easy framework for handling semi-structured data in data vault on Snowflake	
 [Snowflake.com](https://bit.ly/3UmB4Sn)
 [Medium.com](https://bit.ly/3XNGFUU)
 [Linkedin.com](https://bit.ly/3EVzgdo)
-[PDF](./Episode11_semi_structured.pdf)
+[COMING SOON](./Episode11_semi_structured.pdf)
 
 ### [BONUS] Episode 12: Feature Engineering & Business Vault
 How Data Vault can support with Data Science	
 [Snowflake.com](https://bit.ly/3Zt6adM)
 [Medium.com](https://bit.ly/3U43jac)
 [Linkedin.com](https://bit.ly/3zkQzCh)
-[PDF](./Episode12_feature_store%20v3.pdf)
+[COMING SOON](./Episode12_feature_store%20v3.pdf)
 
 ### Episode 13: Join Key Data Types
 Performance focus, join key types as hash keys, natural keys and temporal sequence ids	
 [Medium.com](https://bit.ly/3pVH5wl)
 [Linkedin.com](https://bit.ly/3O2WHpV)
-[PDF](./01_Join_Key_Type.pdf)
+[COMING SOON](./01_Join_Key_Type.pdf)
 
 ### Episode 14: Snapshot PIT Tables
 Performance focus, join key types as hash keys, natural keys and temporal sequence ids in snapshot PIT tables	
 [Medium.com](https://bit.ly/3Y79Bb5)
 [Linkedin.com](https://bit.ly/43DNcDr)
-[PDF](./02_Snapshot_PITs.pdf)
+[COMING SOON](./02_Snapshot_PITs.pdf)
 
 ### Episode 15: Incremental PIT Tables
 Performance focus, join key types as hash keys, natural keys and temporal sequence ids in incremental PIT tables, and merge PIT tables	
 [Medium.com](https://bit.ly/3rSq8n8)
 [Linkedin.com](https://bit.ly/3rUyk6k)
-[PDF](./03_Incremental_PITs.pdf)
+[COMING SOON](./03_Incremental_PITs.pdf)
 
 ### Episode 16: Information Marts
 Performance focus, join key types as hash keys, natural keys and temporal sequence ids in information marts	
 [Medium.com](https://bit.ly/3s2r6xk)
 [Linkedin.com](https://bit.ly/3Qy1ZfP)
-[PDF](./04_Information_Marts.pdf)
+[COMING SOON](./04_Information_Marts.pdf)
 
 ### Episode 17: Expanding to Dimensional Models
 Detour – dimensional modelling with data vault by simulating facts and dimensions using Data Vault native tables.	
 [Medium.com](https://bit.ly/3qHKHSS)
 [Linkedin.com](https://bit.ly/3qDWqBW)
-[PDF](./05_Simulating_Fact_tables_with_Bridges.pdf)
+[COMING SOON](./05_Simulating_Fact_tables_with_Bridges.pdf)
 
 ### Episode 18: Dynamic Tables
 Where do Dynamic Tables fit into the Data Vault architecture?	
 [Medium.com](https://bit.ly/3ssBVsM)
 [Linkedin.com](https://bit.ly/3QRK4Bc)
 [Snowflake.com](https://bit.ly/3sXsUrH)
-[PDF](./06_Dynamic_Information_Marts.pdf)
+[COMING SOON](./06_Dynamic_Information_Marts.pdf)
 
 ### Episode 19: Hybrid Satellite Tables = Operational Data Vault
 What do you get when you mix Data Vault and HTAP? Hybrid Satellites!	
