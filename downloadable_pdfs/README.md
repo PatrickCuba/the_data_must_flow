@@ -191,7 +191,7 @@ DV2.0 has a few esoteric concepts, this article describes the difference between
 [Medium.com](https://bit.ly/3vjTXdg)
 [Linkedin.com](https://bit.ly/3ccwMcq)
 [DataVaultAlliance.com](https://bit.ly/3vTn1rA)
-[PDF](./ghosts%20and%20zero keys.pdf)
+[PDF](./ghosts%20and%20zero%20keys.pdf)
 
 ## Say NO to Refactoring Data Models!
 Facing the same problems every data platform face is the challenge of making changes without regression testing and escalating costs. Sticking to the Data Vault 2.0 patterns rises to that challenge by promoting data agility.	
