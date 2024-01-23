@@ -130,63 +130,74 @@ Solving Time Crime in Data Vault, using Snowflake. How does the timeline correct
 Partly inspired by Tron! Some practical consideration for deploying a Data Vault on Snowflake and taking advantage of some little-known nuances of the platform.	
 [Medium.com](https://bit.ly/337Jhp3)
 [Linkedin.com](https://bit.ly/3sxzmSe)
+[PDF](./True%20Data%20Vault%20Agility%20on%20Snowflake%20v2.pdf)
 
 ## Kappa Vault
 Ease of use of Snowflake for Data Vault streaming pipelines, how the loading patterns have changed	
-[Medium.com](https://bit.ly/3JbRf05
-bit.ly/3CEGYY1
+[Medium.com](https://bit.ly/3JbRf05)
+[Linkedin.com](https://bit.ly/3CEGYY1)
+[PDF](./Kappa%20Vault.pdf)
 
 ## You might be doing #datavault Wrong!
 A long list of considerations when building your Data Vault, what to do, and not to do!	
-[Medium.com](https://bit.ly/2V32eFu
-bit.ly/3GwJX51
+[Medium.com](https://bit.ly/2V32eFu)
+[Linkedin.com](https://bit.ly/3GwJX51)
 
 ## Seven Deadly Sins of Fake Vault
 Born out of observing Data Vault implementation seen in the wild that do not follow the standards, DV2 practitioners have seen various unguided interpretations; these are the main sins we see in the industry
 
 Theme and images inspired by Seven and Milton	
-[Medium.com](https://bit.ly/3n9zIxB
-bit.ly/3lGvevA
-bit.ly/2PXDI5w
+[Medium.com](https://bit.ly/3n9zIxB)
+[Linkedin.com](https://bit.ly/3lGvevA)
+[DataVaultAlliance.com](https://bit.ly/2PXDI5w)
+[PDF](./Seven%20Deadly%20Sins%20of%20Fake%20Vault.pdf)
 
 ## Data Vault Mysteries... Business Vault
 Just what is a Business Vault and why is its creation a mystery, it really shouldn’t be if you follow the standards!
 Theme based on 1950s culture and story telling	
-[Medium.com](https://bit.ly/3BUt81s
-bit.ly/3rfV7V3
-bit.ly/3m9NXQA
+[Medium.com](https://bit.ly/3BUt81s)
+[Linkedin.com](https://bit.ly/3rfV7V3)
+[DataVaultAlliance.com](https://bit.ly/3m9NXQA)
+[PDF](./Building%20a%20BV.pdf)
 
 ## Is it Business Vault or is it not?
 An often-foggy area of Data Vault is how to define a Business Vault, here is some guidance	
-[Medium.com](https://bit.ly/3L5qLP9
-bit.ly/3GsWZAF
+[Medium.com](https://bit.ly/3L5qLP9)
+[Linkedin.com](https://bit.ly/3GsWZAF)
+[PDF](./no-bv.pdf)
 
 ## Apache Spark GraphX and the Seven Bridges of Königsberg
 An example of building a Business Vault Link but using Big Data (Spark + Parquet) to get there. Theme inspired by the story of Euler and the origins of Graph theory	
-[Medium.com](https://bit.ly/3EQ9wO3
-bit.ly/3J7JR5y
-bit.ly/3ezZ6Wh
+[Medium.com](https://bit.ly/3EQ9wO3)
+[Linkedin.com](https://bit.ly/3J7JR5y)
+[Macquarie Bank](https://bit.ly/3ezZ6Wh)
+[PDF](./Apache%20Spark%20GraphX%20and%20the%20Seven%20Bridges%20of%20Kronigberg%200.3.pdf)
 
 ## Business and Source-System Unit of Work
 Why complexity should be hidden from the business user and solved in the data vault	
-[Medium.com](https://bit.ly/3DJrRhO
-bit.ly/3x3LPQA
+[Medium.com](https://bit.ly/3DJrRhO)
+[Linkedin.com](https://bit.ly/3x3LPQA)
+[PDF](./Business%20Vault%20Link.pdf)
 
 ## Data Vault Mysteries… Effectivity Satellite and Driver Key
 Just what does the Effectivity Satellite solve? And why do you need to define a driving key for it? 	
-[Medium.com](https://bit.ly/3oS4k70
-bit.ly/3lQosU9
-bit.ly/3vTn1rA
+[Medium.com](https://bit.ly/3oS4k70)
+[Linkedin.com](https://bit.ly/3lQosU9)
+[DataVaultAlliance.com](https://bit.ly/3vTn1rA)
+[PDF](./effs.pdf)
 
 ## Data Vault Mysteries... Zero Keys & Ghost Records
 DV2.0 has a few esoteric concepts, this article describes the difference between default keys, ghost records and zero keys	
-[Medium.com](https://bit.ly/3vjTXdg
-bit.ly/3ccwMcq
+[Medium.com](https://bit.ly/3vjTXdg)
+[Linkedin.com](https://bit.ly/3ccwMcq)
+[DataVaultAlliance.com](https://bit.ly/3vTn1rA)
+[PDF](./ghosts%20and%20zero keys.pdf)
 
 ## Say NO to Refactoring Data Models!
 Facing the same problems every data platform face is the challenge of making changes without regression testing and escalating costs. Sticking to the Data Vault 2.0 patterns rises to that challenge by promoting data agility.	
-[Medium.com](https://bit.ly/3iEiHZB
-bit.ly/3gssD6C
+[Medium.com](https://bit.ly/3iEiHZB)
+[Linkedin.com](https://bit.ly/3gssD6C)
+[PDF](./Say%20no%20to%20refactoring.pdf)
 
 ## Data Vault Naming Standards
 Theory behind what naming standards should look like	
