@@ -249,188 +249,222 @@ Another take on explaining passive integration
 
 ### Ep1: Immutable Store, Virtual End-Dates
 Why Snowflake is well suited for Data Vault	
-[Medium.com](https://bit.ly/3JeRY2P
-bit.ly/38fAy6H
-bit.ly/3P98LWr
+[Snowflake.com](https://bit.ly/3JeRY2P)
+[Medium.com](https://bit.ly/38fAy6H)
+[Linkedin.com](https://bit.ly/3P98LWr)
+[PDF](./Episode1-Immutable-storage.pdf)
 
 ### Ep2: Snowsight dashboards for Data Vault
 Using Snowsight for Data Observability over a Data Vault	
-[Medium.com](https://bit.ly/3QPhM7T
-bit.ly/3bLgtXj
-bit.ly/3bSZTEY
+[Snowflake.com](https://bit.ly/3QPhM7T)
+[Medium.com](https://bit.ly/3bLgtXj)
+[Linkedin.com](https://bit.ly/3bSZTEY)
+[PDF](./Episode2-snowsight-dashboard.pdf)
 
 ### Ep3: Point-in-Time constructs & Join Trees
 How to build PIT tables to solve getting data out of a Data Vault	
-[Medium.com](https://bit.ly/3wfCBAG
-bit.ly/3PNZJgr
-bit.ly/3pHEbaN
+[Snowflake.com](https://bit.ly/3wfCBAG)
+[Medium.com](https://bit.ly/3PNZJgr)
+[Linkedin.com](https://bit.ly/3pHEbaN)
+[PDF](./Episode3-pits.pdf)
 
 ### Ep4: Querying really BIG satellite tables
 A look at how to use Dynamic Pruning to solve querying of really big satellite tables	
-[Medium.com](https://bit.ly/3BcuRkE
-bit.ly/3eWpEpv
-bit.ly/3xxk6s0
+[Snowflake.com](https://bit.ly/3BcuRkE)
+[Medium.com](https://bit.ly/3eWpEpv)
+[Linkedin.com](https://bit.ly/3xxk6s0)
+[PDF](./Episode4-dynamic_pruning.pdf)
 
 ### Ep5: Streams & Tasks on Views
 Animated version of Kappa Vault	
-[Medium.com](https://bit.ly/3Smfi0u
-bit.ly/3BJDJ1r
-bit.ly/3SCdO2A
+[Snowflake.com](https://bit.ly/3Smfi0u)
+[Medium.com](https://bit.ly/3BJDJ1r)
+[Linkedin.com](https://bit.ly/3SCdO2A)
+[PDF](./Episode5-kappa_vault.pdf)
 
 ### Ep6: Conditional Multi-Table INSERT, and where to use it
 Another look at building PIT Flow Manifold	
-[Medium.com](https://bit.ly/3C9YPHw
-bit.ly/3y8NHIA
-bit.ly/3ybXZb5
+[Snowflake.com](https://bit.ly/3C9YPHw)
+[Medium.com](https://bit.ly/3y8NHIA)
+[Linkedin.com](https://bit.ly/3ybXZb5)
+[PDF](./Episode6-pitflow_manifold.pdf)
 
 ### Ep7: Row Access Policies + Multi-Tenancy
 How to combine multi-tenancy in Data Vault with Row Access Policies	
-[Medium.com](https://bit.ly/3CwfOmf
-bit.ly/3VxqvxD
-bit.ly/3yHfdNC
+[Snowflake.com](https://bit.ly/3CwfOmf)
+[Medium.com](https://bit.ly/3VxqvxD)
+[Linkedin.com](https://bit.ly/3yHfdNC)
+[PDF](./Episode7-multi-tenancy.pdf)
 
 ### Ep8: Hub locking on Snowflake
 An interactive look at hub table locking in Snowflake, transaction isolation levels	
-[Medium.com](https://bit.ly/3WbxsVo
-bit.ly/3DXbDlL
-bit.ly/3DK1mJj
+[Snowflake.com](https://bit.ly/3WbxsVo)
+[Medium.com](https://bit.ly/3DXbDlL)
+[Linkedin.com](https://bit.ly/3DK1mJj)
+[PDF](./Episode8-hub_locking.pdf)
 
 ### Ep10: Virtual Warehouses & Charge Back
 An approach on how to deploy your data architecture to suite Data Vault and a Charge-back model	
-[Medium.com](https://bit.ly/3EsV2F7
-bit.ly/3VdKdO7
-bit.ly/3gn0phc
+[Snowflake.com](https://bit.ly/3EsV2F7)
+[Medium.com](https://bit.ly/3VdKdO7)
+[Linkedin.com](https://bit.ly/3gn0phc)
+[PDF](./Episode10-charge_back.pdf)
 
 ### Ep9: Out-of-sequence data
 How do you handle data that arrives out of sequence dynamically and without needing to replay your loads?	
-[Medium.com](https://bit.ly/3WsRjzD
-bit.ly/3TffRJJ
-bit.ly/3zTz0dt
+[Snowflake.com](https://bit.ly/3WsRjzD)
+[Medium.com](https://bit.ly/3TffRJJ)
+[Linkedin.com](https://bit.ly/3zTz0dt)
+[PDF](./Episode09-out-of-sequence-data.pdf)
 
 ### [BONUS] Episode 11: Handling Semi-Structured Data 
 An easy framework for handling semi-structured data in data vault on Snowflake	
-[Medium.com](https://bit.ly/3UmB4Sn
-bit.ly/3XNGFUU
-bit.ly/3EVzgdo
+[Snowflake.com](https://bit.ly/3UmB4Sn)
+[Medium.com](https://bit.ly/3XNGFUU)
+[Linkedin.com](https://bit.ly/3EVzgdo)
+[PDF](./Episode11_semi_structured.pdf)
 
 ### [BONUS] Episode 12: Feature Engineering & Business Vault
 How Data Vault can support with Data Science	
-[Medium.com](https://bit.ly/3Zt6adM
-bit.ly/3U43jac
-bit.ly/3zkQzCh
+[Snowflake.com](https://bit.ly/3Zt6adM)
+[Medium.com](https://bit.ly/3U43jac)
+[Linkedin.com](https://bit.ly/3zkQzCh)
+[PDF](./Episode12_feature_store%20v3.pdf)
 
 ### Episode 13: Join Key Data Types
 Performance focus, join key types as hash keys, natural keys and temporal sequence ids	
-[Medium.com](https://bit.ly/3pVH5wl
-bit.ly/3O2WHpV
+[Medium.com](https://bit.ly/3pVH5wl)
+[Linkedin.com](https://bit.ly/3O2WHpV)
+[PDF](./01_Join_Key_Type.pdf)
 
 ### Episode 14: Snapshot PIT Tables
 Performance focus, join key types as hash keys, natural keys and temporal sequence ids in snapshot PIT tables	
-[Medium.com](https://bit.ly/3Y79Bb5
-bit.ly/43DNcDr
+[Medium.com](https://bit.ly/3Y79Bb5)
+[Linkedin.com](https://bit.ly/43DNcDr)
+[PDF](./02_Snapshot_PITs.pdf)
 
 ### Episode 15: Incremental PIT Tables
 Performance focus, join key types as hash keys, natural keys and temporal sequence ids in incremental PIT tables, and merge PIT tables	
-[Medium.com](https://bit.ly/3rSq8n8
-bit.ly/3rUyk6k
+[Medium.com](https://bit.ly/3rSq8n8)
+[Linkedin.com](https://bit.ly/3rUyk6k)
+[PDF](./03_Incremental_PITs.pdf)
 
 ### Episode 16: Information Marts
 Performance focus, join key types as hash keys, natural keys and temporal sequence ids in information marts	
-[Medium.com](https://bit.ly/3s2r6xk
-bit.ly/3Qy1ZfP
+[Medium.com](https://bit.ly/3s2r6xk)
+[Linkedin.com](https://bit.ly/3Qy1ZfP)
+[PDF](./04_Information_Marts.pdf)
 
 ### Episode 17: Expanding to Dimensional Models
 Detour – dimensional modelling with data vault by simulating facts and dimensions using Data Vault native tables.	
-[Medium.com](https://bit.ly/3qHKHSS
-bit.ly/3qDWqBW
+[Medium.com](https://bit.ly/3qHKHSS)
+[Linkedin.com](https://bit.ly/3qDWqBW)
+[PDF](./05_Simulating_Fact_tables_with_Bridges.pdf)
 
 ### Episode 18: Dynamic Tables
 Where do Dynamic Tables fit into the Data Vault architecture?	
-[Medium.com](https://bit.ly/3ssBVsM
-bit.ly/3QRK4Bc
-bit.ly/3sXsUrH
+[Medium.com](https://bit.ly/3ssBVsM)
+[Linkedin.com](https://bit.ly/3QRK4Bc)
+[Snowflake.com](https://bit.ly/3sXsUrH)
+[PDF](./06_Dynamic_Information_Marts.pdf)
 
 ### Episode 19: Hybrid Satellite Tables = Operational Data Vault
-What do you get when you mix Data Vault and HTAP? Hybrid Satellites!	?? snowflake ??
-?? medium ??
-?? linkedin ??
+What do you get when you mix Data Vault and HTAP? Hybrid Satellites!	
+
+COMING SOON
  
 ### Episode 20: Archival, Deletion, Retention, Policies, Storage Tiering
-Storage Tiering and Data Vault	?? snowflake ??
-?? medium ??
-?? linkedin ??
+Storage Tiering and Data Vault	
+
+COMBING SOON
  
 ## Snowflake, the Data Cloud
 What’s in the box?	
-[Medium.com](https://bit.ly/3xO2B7Y
-bit.ly/36Ho2we
+[Medium.com](https://bit.ly/3xO2B7Y)
+[Linkedin.com](https://bit.ly/36Ho2we)
+[PDF](./Snowflake%20Patterns.pdf)
 
 ## Snowflake, the Data Cloud (2023)
 What’s in the box now in 2023?	
-[Medium.com](https://bit.ly/3IWmKg3
-bit.ly/3J21WoE
+[Medium.com](https://bit.ly/3IWmKg3)
+[Linkedin.com](https://bit.ly/3J21WoE)
+[PDF](./Snowflake%20Patterns%202023.pdf)
 
 ## Snowflake, the Data Cloud (2024)
-What’s in the box now in 2024?	?? medium ??
-?? linkedin ??
+What’s in the box now in 2024?	
+
+COMING SOON
 
 ## Data Vault and Data Mesh
  
 ### 1.	Data Vault and Domain Driven Design
 Delve into DDD and DV	
-[Medium.com](https://bit.ly/3KMPSGS
-bit.ly/3QkUjKj
+[Medium.com](https://bit.ly/3KMPSGS)
+[Linkedin.com](https://bit.ly/3QkUjKj)
+[PDF](./1-Data%20Vault%20and%20Domain%20Driven%20Design.pdf)
 
 ### 2.	Data Vault as a Product
 Expanding on DDD with Data Products through a DV	
-[Medium.com](https://bit.ly/3TYHrfY
-bit.ly/3qeiC1M
+[Medium.com](https://bit.ly/3TYHrfY)
+[Linkedin.com](https://bit.ly/3qeiC1M)
+[PDF](./2-Data%20Vault%20and%20Data%20Products.pdf)
 
 ### 3.	Data Vault and Domain Oriented Architecture
 Architecture patterns for Data Mesh and Data Vault	
-[Medium.com](https://bit.ly/3qmUeLz
-bit.ly/3Qr3Tvd
+[Medium.com](https://bit.ly/3qmUeLz)
+[Linkedin.com](https://bit.ly/3Qr3Tvd)
+[PDF](./3-Data%20Vault%20&%20Domain%20Driven%20Architecture.pdf)
 
 ### 4.	Data Vault semantics & ontologies
 Final blog, linking Data Vault to the Semantic Layer and Domain Ontologies	
-[Medium.com](https://bit.ly/3RNH9GD
-bit.ly/3qqQlW0
+[Medium.com](https://bit.ly/3RNH9GD)
+[Linkedin.com](https://bit.ly/3qqQlW0)
+[PDF](./4-Data%20Vault%20and%20Semantics.pdf)
 
 ### 5-Data Vault and Analytics Maturity
 Bonus blog discussing Data Vault and other methods for framing and modelling data	
-[Medium.com](https://bit.ly/3SrPqQt
-bit.ly/3Tzf1bA
+[Medium.com](https://bit.ly/3SrPqQt)
+[Linkedin.com](https://bit.ly/3Tzf1bA)
+[PDF](./5-Data Vault%20and%20Analytics%20Maturity.pdf)
 
 ## Data Vault is not a Monolith
-Describing why an enterprise data vault model is not a monolith	?? ??
-?? ??
+Describing why an enterprise data vault model is not a monolith	
+
+COMING SOON
 
 ## The OBT Fallacy & Popcorn Analytics
-Why the rigour of data modelling is still required	?? ??
-?? ??
+Why the rigour of data modelling is still required	
+
+COMING SOON
  
 ## Business Vault & Activity Schema
 A repeatable pattern for Event data as Activities	
-[Medium.com](https://bit.ly/3S2rq8j
-bit.ly/3O51OXq
+[Medium.com](https://bit.ly/3S2rq8j)
+[Linkedin.com](https://bit.ly/3O51OXq)
+[PDF](./Data%20Vault%20and%20Activity%20Schema.pdf)
 
 ## Data Vault + Supernova on Snowflake
-How to denormalise Data Vault in a repeatable pattern	?? ??
-?? ??
+How to denormalise Data Vault in a repeatable pattern
+
+COMING SOON
 
 ## Rules for an almost unbreakable Data Vault
 How to not build a legacy data vault	?? ??
-?? ??
+
+COMING SOON
 
 ## What is the Shape of your Data?
 Expanding the test framework with running stats cheaply on Snowflake	?? ??
-?? ??
+
+COMING SOON
 
 ## Does Data Vault have a Rorschach Problem?
 Why is there consternation, failed implementations when it comes to data vault?	?? ??
-?? ??
+
+COMING SOON
 
 ## The Data Vault Must Flow
 Completes the series and commitment to writing Data Vault on Snowflake content	
-[Medium.com](https://bit.ly/3w9reK6
-bit.ly/3ZDoKRI
+[Medium.com](https://bit.ly/3w9reK6)
+[Linkedin.com](https://bit.ly/3ZDoKRI)
+[PDF](./Full_Catalogue.pdf)
