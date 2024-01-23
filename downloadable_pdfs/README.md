@@ -1,6 +1,6 @@
 # Downloadable Blog Content
 
-Content is/was published in 
+Content that is published in 
 - [Medium](https://patrickcuba.medium.com/)
 - [Linkedin](https://www.linkedin.com/in/patrickcuba/recent-activity/articles/)
 - [DataVaultAlliance](https://datavaultalliance.com/)
