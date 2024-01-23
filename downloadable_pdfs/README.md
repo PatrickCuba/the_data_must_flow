@@ -401,31 +401,31 @@ COMING SOON
 Delve into DDD and DV	
 [Medium.com](https://bit.ly/3KMPSGS)
 [Linkedin.com](https://bit.ly/3QkUjKj)
-[PDF](./1-Data%20Vault%20and%20Domain%20Driven%20Design.pdf)
+[COMING SOON](./1-Data%20Vault%20and%20Domain%20Driven%20Design.pdf)
 
 ### 2.	Data Vault as a Product
 Expanding on DDD with Data Products through a DV	
 [Medium.com](https://bit.ly/3TYHrfY)
 [Linkedin.com](https://bit.ly/3qeiC1M)
-[PDF](./2-Data%20Vault%20and%20Data%20Products.pdf)
+[COMING SOON](./2-Data%20Vault%20and%20Data%20Products.pdf)
 
 ### 3.	Data Vault and Domain Oriented Architecture
 Architecture patterns for Data Mesh and Data Vault	
 [Medium.com](https://bit.ly/3qmUeLz)
 [Linkedin.com](https://bit.ly/3Qr3Tvd)
-[PDF](./3-Data%20Vault%20&%20Domain%20Driven%20Architecture.pdf)
+[COMING SOON](./3-Data%20Vault%20&%20Domain%20Driven%20Architecture.pdf)
 
 ### 4.	Data Vault semantics & ontologies
 Final blog, linking Data Vault to the Semantic Layer and Domain Ontologies	
 [Medium.com](https://bit.ly/3RNH9GD)
 [Linkedin.com](https://bit.ly/3qqQlW0)
-[PDF](./4-Data%20Vault%20and%20Semantics.pdf)
+[COMING SOON](./4-Data%20Vault%20and%20Semantics.pdf)
 
 ### 5-Data Vault and Analytics Maturity
 Bonus blog discussing Data Vault and other methods for framing and modelling data	
 [Medium.com](https://bit.ly/3SrPqQt)
 [Linkedin.com](https://bit.ly/3Tzf1bA)
-[PDF](./5-Data Vault%20and%20Analytics%20Maturity.pdf)
+[COMING SOON](./5-Data Vault%20and%20Analytics%20Maturity.pdf)
 
 ## Data Vault is not a Monolith
 Describing why an enterprise data vault model is not a monolith	
@@ -441,7 +441,7 @@ COMING SOON
 A repeatable pattern for Event data as Activities	
 [Medium.com](https://bit.ly/3S2rq8j)
 [Linkedin.com](https://bit.ly/3O51OXq)
-[PDF](./Data%20Vault%20and%20Activity%20Schema.pdf)
+[COMING SOON](./Data%20Vault%20and%20Activity%20Schema.pdf)
 
 ## Data Vault + Supernova on Snowflake
 How to denormalise Data Vault in a repeatable pattern
@@ -467,4 +467,4 @@ COMING SOON
 Completes the series and commitment to writing Data Vault on Snowflake content	
 [Medium.com](https://bit.ly/3w9reK6)
 [Linkedin.com](https://bit.ly/3ZDoKRI)
-[PDF](./Full_Catalogue.pdf)
+[COMING SOON](./Full_Catalogue.pdf)
