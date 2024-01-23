@@ -449,17 +449,17 @@ How to denormalise Data Vault in a repeatable pattern
 COMING SOON
 
 ## Rules for an almost unbreakable Data Vault
-How to not build a legacy data vault	?? ??
+How to not build a legacy data vault	
 
 COMING SOON
 
 ## What is the Shape of your Data?
-Expanding the test framework with running stats cheaply on Snowflake	?? ??
+Expanding the test framework with running stats cheaply on Snowflake	
 
 COMING SOON
 
 ## Does Data Vault have a Rorschach Problem?
-Why is there consternation, failed implementations when it comes to data vault?	?? ??
+Why is there consternation, failed implementations when it comes to data vault?	
 
 COMING SOON
 
