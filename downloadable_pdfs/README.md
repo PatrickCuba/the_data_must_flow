@@ -55,69 +55,81 @@ Ideas on how to get a Data Vault project started and build momentum
 
 ## Building Data Vault modelling capability through the Mob
 How to go about modelling your Data Vault through collaboration and having the right people in the right place. Inspired by work done at a major customer and extreme programming principles	
-[Medium.com](https://bit.ly/3zgP7OP
-bit.ly/2NiceTN
+[Medium.com](https://bit.ly/3zgP7OP)
+[Linkedin.com](https://bit.ly/2NiceTN)
+[PDF](./Building%20Data%20Vault%20modelling%20capability%20through%20the%20Mob.pdf)
 
 ## Bring out your Dead… Data
 The first DV article on consideration on what to do with defunct data! Inspired by Pet Semetary, Poltergeist and the Sixth Sense!	
-[Medium.com](https://bit.ly/3o8To3m
-bit.ly/3Lh6pCP
-bit.ly/2CqZTKJ
+[Medium.com](https://bit.ly/3o8To3m)
+[Linkedin.com](https://bit.ly/3Lh6pCP)
+[DataVaultAlliance.com](https://bit.ly/2CqZTKJ)
+[PDF](./graveyard%204.pdf)
 
 ## Data Vault Industry Verticals
 An outcome of a Data Vault model review, this article explains some of the pitfalls of attempting to conform a data vault to an industry model. Art inspired by Sim City.	
-[Medium.com](https://bit.ly/3tIckuf
-bit.ly/34hHezy
+[Medium.com](https://bit.ly/3tIckuf)
+[Linkedin.com](https://bit.ly/34hHezy)
+[PDF](./industry%20model.pdf)
 
 ## Data Vault Loader Traps
 Articulating some of the pitfalls of not doing a Data Vault properly!	
-[Medium.com](https://bit.ly/3tqwAQU
-bit.ly/34Duine
+[Medium.com](https://bit.ly/3tqwAQU)
+[Linkedin.com](https://bit.ly/34Duine)
+[PDF](./Data%20Vault%20Loader%20Traps.pdf)
 
 ## Decided to build your own Data Vault automation tool?
 Based on experience building a home-grown Data Vault automation tool, this post covers most of the patterns you will encounter in a Data Vault 2.0 model, with examples!	
-[Medium.com](https://bit.ly/3bRlV7U
-bit.ly/35XZ0YX
+[Medium.com](https://bit.ly/3bRlV7U)
+[Linkedin.com](https://bit.ly/35XZ0YX)
+[PDF](./Decided%20to%20build%20your%20own%20Data%20Vault%20automation%20tool.pdf)
 
 ## Data Vault 2.0 on Snowflake…To hash or not to hash… that is the question
 To hash or not to hash on Snowflake…? An article justifying why you should and how Snowflake’s MPP interpretation can still be used to deliver a Data Vault. Any guess to whom that is in the title page?	
-[Medium.com](https://bit.ly/3dn83n8
-bit.ly/3rH7gS5
+[Medium.com](https://bit.ly/3dn83n8)
+[Linkedin.com](https://bit.ly/3rH7gS5)
+[PDF](./Data%20Vault%20hashing%20in%20Snowflake.pdf)
 
 ## Why EQUIJOINS Matter! 
 Evidence on how PIT tables (when designed right) take advantage of inherent OLAP capabilities for querying facts and dimensions. Inspired by 12 Angry Men and Juror #8.	
-[Medium.com](https://bit.ly/3dBxOQK
-bit.ly/3Bci9BV
+[Medium.com](https://bit.ly/3dBxOQK)
+[Linkedin.com](https://bit.ly/3Bci9BV)
+[PDF](./Why%20Equi2.pdf)
 
 ## Data Vault Test Automation
 Reconciliation between staged and target and between target tables is a must. This test framework is designed to keep the data vault implementation honest, and it is insert-only as well.	
-[Medium.com](https://bit.ly/3dUHPIS
-bit.ly/3shb5jq
+[Medium.com](https://bit.ly/3dUHPIS)
+[Linkedin.com](https://bit.ly/3shb5jq)
+[PDF](./auto-testing.pdf)
 
 ## Data Vault Dashboard Monitoring
 How to set up and track Data Vault dashboard reporting based out of Snowsight and the same INSERT-ONLY paradigm of DV2.0	
-[Medium.com](https://bit.ly/3BjSg1F
-bit.ly/3ryMdEM
+[Medium.com](https://bit.ly/3BjSg1F)
+[Linkedin.com](https://bit.ly/3ryMdEM)
+[PDF](./Snowsight%20for%20monitoring%20Data%20Vault.pdf)
 
 ## Data Vault PIT Flow Manifold.
 A little bit of Snowflake engineering in Conditional Multi-Table INSERTS and Point in Time (PIT) tables	
-[Medium.com](https://bit.ly/3iEkBJC
-bit.ly/3uNJVUn
+[Medium.com](https://bit.ly/3iEkBJC)
+[Linkedin.com](https://bit.ly/3uNJVUn)
+[PDF](./pit%20manifold.pdf)
 
 ## The Lost Art of Building Bridges
 Where to use Bridge Tables and what problems do they solve?	
-[Medium.com](https://bit.ly/3MFnXZr
-bit.ly/3PCTKMJ
+[Medium.com](https://bit.ly/3MFnXZr)
+[Linkedin.com](https://bit.ly/3PCTKMJ)
+[PDF](./bridge_art.pdf)
 
 ## Data Vault’s XTS pattern on Snowflake
 Solving Time Crime in Data Vault, using Snowflake. How does the timeline correction pattern perform on Snowflake?	
-[Medium.com](https://bit.ly/3aCCRhQ
-bit.ly/3rvZduO
+[Medium.com](https://bit.ly/3aCCRhQ)
+[Linkedin.com](https://bit.ly/3rvZduO)
+[PDF](./Data%20Vault%20XTS%20on%20Snowflake.pdf)
 
 ## Data Vault Agility on Snowflake
 Partly inspired by Tron! Some practical consideration for deploying a Data Vault on Snowflake and taking advantage of some little-known nuances of the platform.	
-[Medium.com](https://bit.ly/337Jhp3
-bit.ly/3sxzmSe
+[Medium.com](https://bit.ly/337Jhp3)
+[Linkedin.com](https://bit.ly/3sxzmSe)
 
 ## Kappa Vault
 Ease of use of Snowflake for Data Vault streaming pipelines, how the loading patterns have changed	
