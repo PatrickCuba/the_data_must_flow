@@ -1,0 +1,328 @@
+name: card_stats
+tables:
+  - name: AS_OF_DATE
+    base_table:
+      database: DATAWAREHOUSE
+      schema: QUERYASSISTANCE
+      table: AS_OF_DATE
+    time_dimensions:
+      - name: AS_OF
+        expr: AS_OF
+        data_type: DATE
+        sample_values:
+          - '2022-01-01'
+          - '2022-01-02'
+          - '2022-01-03'
+        description: The date for which the data is current or applicable, used to track changes and updates over time.
+        synonyms:
+          - effective_date
+          - as_of_date
+          - date_key
+          - snapshot_date
+          - reporting_date
+          - reference_date
+          - date_stamp
+          - date_dimension
+          - calendar_date
+      - expr: YEAR
+        name: YEAR
+        synonyms:
+          - calendar_year
+          - fiscal_year
+          - annual_period
+          - yearly_period
+          - twelve_month_period
+        description: The year in which the data is current or relevant, typically used to track changes or updates over time.
+        data_type: NUMBER(38, 0)
+        sample_values:
+          - '2022'
+      - expr: MONTH
+        name: MONTH
+        description: The month in which the data is current or the month being reported.
+        synonyms:
+          - month_number
+          - month_value
+          - month_code
+          - calendar_month
+          - month_of_year
+        data_type: NUMBER(38, 0)
+        sample_values:
+          - '1'
+      - expr: DAY_OF_MONTH
+        name: DAY_OF_MONTH
+        description: The day of the month (1-31) for which the data is current or effective.
+        synonyms:
+          - day_of_month
+          - day_number
+          - monthly_day
+          - day_in_month
+          - monthly_date
+          - calendar_day
+        data_type: NUMBER(38, 0)
+        sample_values:
+          - '1'
+          - '2'
+          - '3'
+    facts:
+      - name: DATE_SID
+        expr: DATE_SID
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '20220101'
+          - '20220102'
+          - '20220103'
+        description: Unique identifier for a specific date, represented in the format YYYYMMDD, used to track and reference a particular point in time for fact data.
+        synonyms:
+          - date_key
+          - date_id
+          - date_identifier
+          - date_code
+          - date_number
+          - date_index
+    primary_key:
+      columns:
+        - DATE_SID
+    filters:
+      - expr: MONTH_LASTDAY
+        name: MONTH_LASTDAY
+        description: The last day of the month for which the data is current.
+        synonyms:
+          - last_day_of_month
+          - end_of_month
+          - month_end_date
+          - last_calendar_day
+          - month_final_day
+  - name: BRDG_CARDACCOUNT_DAILY
+    base_table:
+      database: DATAWAREHOUSE
+      schema: QUERYASSISTANCE
+      table: BRDG_CARDACCOUNT_DAILY
+    dimensions:
+      - name: ACCOUNT_ID
+        expr: ACCOUNT_ID
+        data_type: VARCHAR(50)
+        sample_values:
+          - '0000000811'
+          - '0000000391'
+          - '0000000151'
+        description: Unique identifier for a customer's bank account.
+        synonyms:
+          - account_number
+          - account_identifier
+          - account_code
+          - account_key
+          - account_reference
+      - name: CUSTOMER_ID
+        expr: CUSTOMER_ID
+        data_type: VARCHAR(40)
+        sample_values:
+          - B0000000811
+          - B0000000151
+          - B0000000230
+        description: Unique identifier for the customer associated with the credit card account.
+        synonyms:
+          - client_id
+          - customer_number
+          - account_holder_id
+          - patron_id
+          - user_id
+      - name: CARD_CREDIT_DEBIT
+        expr: CARD_CREDIT_DEBIT
+        data_type: VARCHAR(1)
+        sample_values:
+          - D
+          - C
+        description: Indicates whether the transaction on the card account was a debit (D) or a credit (C) transaction.
+        synonyms:
+          - card_type
+          - transaction_type
+          - debit_credit_indicator
+          - card_transaction_mode
+          - payment_method
+      - expr: SAT_CARD_MASTERFILE_DV_SID
+        data_type: NUMBER(38, 0)
+        name: SAT_CARD_MASTERFILE_DV_SID
+      - expr: SAT_CARD_NAME_PII_DV_SID
+        name: SAT_CARD_NAME_PII_DV_SID
+        data_type: NUMBER(38, 0)
+      - expr: DATE_SID
+        name: DATE_SID
+        data_type: NUMBER(38, 0)
+    facts:
+      - name: CARD_TRANSACTION
+        expr: CARD_TRANSACTION
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '-97'
+          - '-2584'
+          - '-3053'
+        description: The total amount of money spent or credited to a card account on a specific day, represented as a negative value for debits and a positive value for credits.
+        synonyms:
+          - card_payment
+          - transaction_amount
+          - card_charge
+          - payment_value
+          - transaction_value
+      - name: CARD_TRANSACTION_SUMM
+        expr: CARD_TRANSACTION_SUMM
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '-4558'
+          - '-14364'
+          - '-17417'
+        description: The total value of all transactions made on a specific card account on a daily basis, represented as a negative number to indicate debits or expenses.
+        synonyms:
+          - total_card_transactions
+          - card_transaction_total
+          - summation_of_card_transactions
+          - card_transaction_aggregate
+          - aggregated_card_value
+    time_dimensions: []
+  - name: SAT_CARD_MASTERFILE
+    base_table:
+      database: DATAWAREHOUSE
+      schema: DATAVAULT
+      table: SAT_CARD_MASTERFILE
+    dimensions:
+      - name: CARD_TYPE
+        expr: CARD_TYPE
+        data_type: VARCHAR(1)
+        description: The type of the Satellite Card.
+        sample_values:
+          - P
+          - A
+        synonyms:
+          - card_category
+          - card_classification
+          - card_designation
+          - card_identifier
+          - card_label
+      - name: CARD_STATUS
+        expr: CARD_STATUS
+        data_type: VARCHAR(1)
+        description: The status of the satellite card.
+        synonyms:
+          - card_state
+          - card_condition
+          - satellite_card_state
+          - card_activation_status
+          - card_validity_status
+      - name: ACCOUNT_ID
+        expr: ACCOUNT_ID
+        data_type: VARCHAR(40)
+        sample_values:
+          - '00000000000000000000'
+          - '0000000092'
+          - '0000000145'
+        description: Unique identifier for a customer's account.
+        synonyms:
+          - account_number
+          - account_identifier
+          - customer_id
+          - user_id
+          - client_id
+          - account_code
+      - name: CREDIT_LIMIT
+        expr: CREDIT_LIMIT
+        data_type: NUMBER(38,0)
+        sample_values:
+          - '2000'
+        description: The maximum amount of credit that can be extended to a customer on a specific credit card account.
+        synonyms:
+          - max_credit
+          - credit_ceiling
+          - credit_maximum
+          - credit_cap
+          - maximum_credit_limit
+          - credit_threshold
+      - expr: DV_SID
+        name: SAT_CARD_MASTERFILE_DV_SID
+        data_type: NUMBER(38, 0)
+    facts:
+      - name: CARD_BALANCE
+        expr: CARD_BALANCE
+        data_type: NUMBER(38,0)
+        description: The amount of funds available on a card.
+        sample_values:
+          - '19380'
+          - '5877'
+        synonyms:
+          - available_funds
+          - card_value
+          - current_balance
+          - remaining_balance
+          - account_balance
+          - outstanding_balance
+          - card_amount
+    primary_key:
+      columns:
+        - SAT_CARD_MASTERFILE_DV_SID
+  - name: SAT_CARD_NAME_PII
+    base_table:
+      database: DATAWAREHOUSE
+      schema: DATAVAULT
+      table: SAT_CARD_NAME_PII
+    dimensions:
+      - name: OBFUSCATED_NAME
+        expr: OBFUSCATED_NAME
+        data_type: VARCHAR(10)
+        sample_values:
+          - 7aee9d572e
+          - 77bb271e6e
+        description: A unique identifier for a specific satellite card, used to protect the actual name of the card for privacy reasons.
+        synonyms:
+          - encrypted_name
+          - encoded_name
+          - anonymized_name
+          - masked_name
+          - protected_name
+          - secured_name
+          - confidential_name
+      - name: CUSTOMER_ID
+        expr: CUSTOMER_ID
+        data_type: VARCHAR(40)
+        sample_values:
+          - '00000000000000000000'
+          - B0000000219
+          - B0000000221
+        description: Unique identifier for a customer in the system.
+        synonyms:
+          - client_id
+          - customer_key
+          - account_id
+          - user_id
+          - client_key
+          - account_number
+          - customer_number
+      - expr: DV_SID
+        name: SAT_CARD_NAME_PII_DV_SID
+        data_type: NUMBER(38, 0)
+    facts: []
+    primary_key:
+      columns:
+        - SAT_CARD_NAME_PII_DV_SID
+relationships:
+  - name: master_file
+    join_type: inner
+    relationship_type: many_to_one
+    left_table: BRDG_CARDACCOUNT_DAILY
+    relationship_columns:
+      - left_column: SAT_CARD_MASTERFILE_DV_SID
+        right_column: SAT_CARD_MASTERFILE_DV_SID
+    right_table: SAT_CARD_MASTERFILE
+  - name: name_pii
+    join_type: inner
+    relationship_type: many_to_one
+    left_table: BRDG_CARDACCOUNT_DAILY
+    relationship_columns:
+      - left_column: SAT_CARD_NAME_PII_DV_SID
+        right_column: SAT_CARD_NAME_PII_DV_SID
+    right_table: SAT_CARD_NAME_PII
+  - name: date_dim
+    join_type: inner
+    relationship_type: many_to_one
+    left_table: BRDG_CARDACCOUNT_DAILY
+    relationship_columns:
+      - right_column: DATE_SID
+        left_column: DATE_SID
+    right_table: AS_OF_DATE
