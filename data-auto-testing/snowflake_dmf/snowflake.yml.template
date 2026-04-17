@@ -1,0 +1,13 @@
+definition_version: 2
+entities:
+  dv_dmf_metrics:
+    type: streamlit
+    identifier:
+      name: DV_DMF_METRICS
+      database: __DATABASE__
+      schema: __SCHEMA__
+    query_warehouse: __WAREHOUSE__
+    main_file: streamlit_app.py
+    artifacts:
+      - streamlit_app.py
+      - pyproject.toml
