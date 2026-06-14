@@ -59,7 +59,13 @@ DVOS supports 8 satellite types. PII is a **naming suffix** applied to any satel
 
 ### Key concepts
 
-**Hash key** — hash of the business key concatenated with the `dv_collisioncode` (BKCC — Business Key Collision Code). **Record source is NOT part of the hash key.** BKCC is a short stable discriminator (e.g. `'CRM'`) that distinguishes overlapping key spaces from different source systems. Hash algorithm is project-configured (default SHA1 → `BINARY(20)`). Formula: `hash_fn(UPPER(CONCAT(bkcc || '||' || COALESCE(NULLIF(TRIM(bk), ''), '-1'))))`.
+**Hash key** — hash of the business key concatenated with the `dv_collisioncode` (BKCC — Business Key Collision Code) and, when multi-tenancy is enabled, `dv_tenant_id`. **Record source is NOT part of the hash key.** BKCC is a short stable discriminator (e.g. `'default'`, `'zoho'`) that distinguishes overlapping key spaces from different source systems. Hash algorithm is project-configured (default SHA1 → `BINARY(20)`).
+
+Formula depends on `tenant.enabled` in the manifest:
+- Multi-tenancy enabled: `hash_fn(UPPER(CONCAT(tenant_id || '||' || bkcc || '||' || COALESCE(NULLIF(TRIM(bk), ''), '-1'))))`
+- Multi-tenancy disabled: `hash_fn(UPPER(CONCAT(bkcc || '||' || COALESCE(NULLIF(TRIM(bk), ''), '-1'))))`
+
+Default values: `dv_tenant_id = 'default'`, `dv_collisioncode = 'default'`. Per-source overrides (e.g. `bkcc_value: zoho`, `tenant_id_value: fraud`) are set in the manifest hub sources.
 
 **Hash diff (dv_hashdiff)** — hash of all tracked attribute columns concatenated. Used in the satellite load pattern to detect whether a row has changed without comparing every column individually. Column name is `dv_hashdiff`. Algorithm matches the project's configured hash algorithm.
 
