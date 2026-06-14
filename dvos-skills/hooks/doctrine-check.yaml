@@ -1,0 +1,40 @@
+# DVOS Hook: Doctrine Validation on SQL Save
+#
+# This hook fires when any .sql file is saved in the project.
+# It runs the doctrine enforcer agent to check for violations.
+#
+# Installation: Add to your CoCo hooks configuration:
+#   hooks:
+#     on_file_save:
+#       - pattern: "**/*.sql"
+#         command: "Run /dv-validate model on the saved file contents"
+#
+# What it checks:
+# - No LEDTS/end-date columns
+# - No UPDATE/DELETE in satellite load patterns
+# - Correct hash key formula (BKCC, not record source)
+# - Correct column naming (dv_load_timestamp, not LDTS)
+# - Hub MERGE only updates last_seen_date
+# - Satellite uses INSERT + NOT EXISTS
+# - No FK constraints in link DDL
+# - Ghost record pattern is idempotent (WHERE NOT EXISTS)
+#
+# The hook surfaces violations inline but does NOT block the save.
+# Use /dv-validate for the full 42-rule check.
+
+hook:
+  name: dv-doctrine-check
+  description: Check saved SQL files against Data Vault doctrine rules
+  trigger: on_file_save
+  pattern: "**/*.sql"
+  action: |
+    Read the saved file. Check for these critical violations:
+    1. Any column named LEDTS, LOAD_END_DATE, or dv_end_date in a non-effectivity satellite
+    2. Any UPDATE or DELETE statement targeting a SAT_ table
+    3. Any MERGE statement targeting a SAT_ table
+    4. Hash key computation using dv_hashkey_hub_* as input (never hash a hash)
+    5. Column aliases LDTS, HDIFF, RSRC instead of canonical names
+    6. ENFORCED primary key constraint (should be NOT ENFORCED)
+    7. Bridge table prefix BRDG_ instead of BDG_
+    If violations found: print them as warnings. Do not block.
+    If clean: say nothing (silent pass).
