@@ -19,6 +19,8 @@ DVOS generates staging views automatically from the manifest. This skill helps y
 | Record tracking staging | `stg_rt_{source_file}_{parent_type}_{parent}_{hashkey}` | Base staging view | Tracks entity presence per applied timestamp |
 | Extended tracking staging | `stg_xt_{source_file}_{parent_type}_{parent}_{hashkey}` | Base staging view | Tracks adjacent satellite hashdiffs for XTS |
 
+**Source badge** (`{source_badge}`) is the system-level identifier for the source (e.g. `sapbw`, `mdm`, `zoho`). It must be defined before staging views are named. See `reference/naming-conventions.md` for the full source badge definition and rules.
+
 ---
 
 ## Core doctrine: staging is metadata-only
