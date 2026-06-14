@@ -78,14 +78,23 @@ Hashdiff naming uses the **full satellite name** (e.g. `dv_hashdiff_sat_customer
 
 ### Hash computation rules
 
-**Hash keys** — use `UPPER()`, null substitute `-1`:
+**Hash keys** — use `UPPER()`, null substitute `-1`. Whether `dv_tenant_id` is included depends on `tenant.enabled` in the manifest:
+
 ```sql
+-- Multi-tenancy ENABLED (tenant.enabled: true):
+hash_fn(UPPER(CONCAT(
+    '<tenant_id_value>' || '||' || '<bkcc>' || '||' || COALESCE(TRIM(CAST(<bk_col> AS STRING)), '-1')
+))) AS dv_hashkey_hub_<name>
+
+-- Multi-tenancy DISABLED (tenant.enabled: false):
 hash_fn(UPPER(CONCAT(
     '<bkcc>' || '||' || COALESCE(TRIM(CAST(<bk_col> AS STRING)), '-1')
 ))) AS dv_hashkey_hub_<name>
 ```
 
-**Hashdiffs** — **NO `UPPER()` or `LOWER()`** (DV-STG-007), null substitute `''`:
+Default values: `dv_tenant_id = 'default'`, `dv_collisioncode = 'default'`. Override per source using `bkcc_value` and `tenant_id_value` in the manifest hub sources (e.g. `bkcc_value: zoho` for Zoho-sourced accounts).
+
+**Hashdiffs** — **NO `UPPER()` or `LOWER()`** (DV-STG-007), null substitute `''`, no tenant_id/bkcc:
 ```sql
 hash_fn(CONCAT(
     COALESCE(TRIM(CAST(<attr1> AS STRING)), '') || '||' ||
