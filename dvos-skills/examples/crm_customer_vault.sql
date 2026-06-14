@@ -169,12 +169,13 @@ QUALIFY ROW_NUMBER() OVER (PARTITION BY dv_hashkey_hub_customer ORDER BY dv_appl
 
 CREATE OR REPLACE VIEW <DATABASE>.STAGED.STG_SF_CUSTOMER AS
 SELECT
-    -- Hash keys
+    -- Hash keys (multi-tenancy ENABLED — includes tenant_id)
     SHA1_BINARY(UPPER(CONCAT(
-        COALESCE(dv_tenant_id, '0') || '||' ||
-        COALESCE(dv_collisioncode, '0') || '||' ||
+        'default' || '||' ||
+        'default' || '||' ||
         COALESCE(NULLIF(TRIM(CAST(customer_id AS STRING)), ''), '-1')
     ))) AS dv_hashkey_hub_customer,
+    -- Note: use 'default' as placeholder; set bkcc_value/tenant_id_value per source in manifest
 
     -- Hashdiff (no UPPER, empty string for nulls)
     SHA1_BINARY(CONCAT(
@@ -185,8 +186,8 @@ SELECT
     )) AS dv_hashdiff_sat_customer_sf,
 
     -- Metadata
-    '0' AS dv_tenant_id,
-    '0' AS dv_collisioncode,
+    'default' AS dv_tenant_id,
+    'default' AS dv_collisioncode,
     CURRENT_TIMESTAMP() AS dv_load_timestamp,
     batch_timestamp AS dv_applied_timestamp,
     'SALESFORCE.CRM.ACCOUNTS' AS dv_recordsource,
