@@ -45,23 +45,30 @@ Return three sections for each construct:
 
 **CRITICAL: Link hash keys are computed from participant BUSINESS KEYS — never from hub hashkeys.** Hashing a hash violates DV-HASH-002.
 
+**MULTI-TENANCY TOGGLE:** Whether `dv_tenant_id` is included in the hash depends on the manifest `tenant.enabled` setting:
+- `tenant.enabled: true` → hash = `tenant_id || bkcc || business_key`
+- `tenant.enabled: false` → hash = `bkcc || business_key` (tenant_id omitted)
+
+Default values: `dv_tenant_id = 'default'`, `dv_collisioncode = 'default'`. Override per source using `bkcc_value` and `tenant_id_value` in the manifest hub sources.
+
 ```sql
--- Hub hash key (single business key):
+-- Hub hash key (multi-tenancy ENABLED):
 SHA1_BINARY(UPPER(CONCAT(
-    '<bkcc_value>' || '||' || COALESCE(NULLIF(TRIM(CAST(<bk_col> AS STRING)), ''), '-1')
+    '<tenant_id_value>' || '||' ||
+    '<bkcc>' || '||' ||
+    COALESCE(NULLIF(TRIM(CAST(<bk_col> AS STRING)), ''), '-1')
 ))) :: BINARY(20)
 
--- Link hash key (computed from participant business keys, NOT from hub hashkeys):
+-- Hub hash key (multi-tenancy DISABLED):
 SHA1_BINARY(UPPER(CONCAT(
-    '<bkcc_a>' || '||' || COALESCE(NULLIF(TRIM(CAST(<bk_col_a> AS STRING)), ''), '-1') || '||' ||
-    '<bkcc_b>' || '||' || COALESCE(NULLIF(TRIM(CAST(<bk_col_b> AS STRING)), ''), '-1')
+    '<bkcc>' || '||' ||
+    COALESCE(NULLIF(TRIM(CAST(<bk_col> AS STRING)), ''), '-1')
 ))) :: BINARY(20)
 
--- Link hash key (3+ participants — extend pattern):
+-- Link hash key (multi-tenancy ENABLED, 2 participants — from business keys, NEVER from hub hashkeys):
 SHA1_BINARY(UPPER(CONCAT(
-    '<bkcc_a>' || '||' || COALESCE(NULLIF(TRIM(CAST(<bk_col_a> AS STRING)), ''), '-1') || '||' ||
-    '<bkcc_b>' || '||' || COALESCE(NULLIF(TRIM(CAST(<bk_col_b> AS STRING)), ''), '-1') || '||' ||
-    '<bkcc_c>' || '||' || COALESCE(NULLIF(TRIM(CAST(<bk_col_c> AS STRING)), ''), '-1')
+    '<tenant_id_a>' || '||' || '<bkcc_a>' || '||' || COALESCE(NULLIF(TRIM(CAST(<bk_col_a> AS STRING)), ''), '-1') || '||' ||
+    '<tenant_id_b>' || '||' || '<bkcc_b>' || '||' || COALESCE(NULLIF(TRIM(CAST(<bk_col_b> AS STRING)), ''), '-1')
 ))) :: BINARY(20)
 ```
 
