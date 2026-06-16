@@ -1,6 +1,6 @@
 ---
 name: dv-generate
-description: Generate SQL DDL and load patterns for a validated Data Vault 2.0 construct
+description: Generate SQL DDL and load patterns for a validated Pragmatic Data Vault construct
 enabled: true
 ---
 
@@ -27,16 +27,36 @@ If ANY violations are returned:
 
 If CLEAN: proceed.
 
-### 2 — Spawn the SQL Generator subagent
+### 2 — Confirm project-level settings
+
+Before generating, confirm two project-level settings if not already known:
+
+**a) Hash algorithm** (ask once per project):
+> **Which hash algorithm does this project use?** (MD5, SHA1, or SHA256)
+
+Default: SHA1. See "Hash algorithm configuration" below for the full mapping.
+
+**b) BKCC per source** (ask per data source being onboarded):
+> **Does this source need a custom BKCC (collision code), or should we use `'default'`?**
+
+Default: `'default'`. Only set a custom value when the source has overlapping key spaces with other sources that represent **different** business entities. If the user does not set a BKCC, use `'default'` — do not prompt further.
+
+**c) Tenant ID per source** (ask per data source being onboarded):
+> **Does this source need a custom tenant ID, or should we use `'default'`?**
+
+Default: `'default'`. Only set a custom value when the vault serves multiple business units or brands that must be logically separated. If the user does not set a tenant ID, use `'default'` — do not prompt further. When multi-tenancy is disabled in the manifest (`tenant.enabled: false`), the tenant ID column is still present but always `'default'`.
+
+### 3 — Spawn the SQL Generator subagent
 
 Read `agents/sql-generator.md` for the full system prompt.
 
-Pass the validated construct definition. Ask the Generator to produce:
-1. `CREATE TABLE` DDL
+Pass the validated construct definition plus the confirmed hash algorithm, BKCC value, and tenant ID. Ask the Generator to produce:
+1. `CREATE TABLE` DDL (with correct BINARY size for chosen algorithm)
 2. Insert-only load pattern (anti-semi join)
-3. Hash key computation expression
+3. Hash key computation expression (using chosen algorithm function, BKCC value, and tenant ID)
+4. Ghost record INSERT (using correct ghost hex length)
 
-### 3 — Present and confirm
+### 4 — Present and confirm
 
 Show the SQL to the user before finalizing. Ask:
 > "Does this look right? Reply 'yes' to finalize, or describe any changes."
@@ -47,7 +67,29 @@ Do not write to files unless the user asks.
 
 **Note on column names:** DVOS uses `dv_hashkey_hub_<name>` (not `<NAME>_HK`), `dv_load_timestamp` (not `LDTS`), `dv_hashdiff` (not `HDIFF`), `dv_recordsource` (not `RSRC`). There is **no end-date column** — DVOS satellites are insert-only; current row is retrieved via `QUALIFY ROW_NUMBER()`.
 
-**Note on hash key:** Hash key uses `dv_collisioncode` (BKCC) as the discriminator — **not record source**. Algorithm is project-configured (default SHA1 → `SHA1_BINARY(...) :: BINARY(20)`).
+**Note on hash key:** Hash key uses `dv_collisioncode` (BKCC) as the discriminator — **not record source**. Algorithm is project-configured — ask the user which algorithm before generating DDL.
+
+### Hash algorithm configuration (project-level)
+
+Ask the user:
+> **Which hash algorithm does this project use?** (MD5, SHA1, or SHA256)
+
+| Algorithm | Snowflake function | Column type | Ghost record hex | Collision resistance |
+|---|---|---|---|---|
+| MD5 | `MD5_BINARY(...)` | `BINARY(16)` | `TO_BINARY(REPEAT('0', 32), 'HEX')` | Low — 128-bit, known collisions. Use only for small key spaces or legacy compatibility. |
+| **SHA1** (default) | `SHA1_BINARY(...)` | `BINARY(20)` | `TO_BINARY(REPEAT('0', 40), 'HEX')` | Moderate — 160-bit. Recommended default for most data vaults. |
+| SHA256 | `SHA2_BINARY(...)` | `BINARY(32)` | `TO_BINARY(REPEAT('0', 64), 'HEX')` | High — 256-bit. Use for very large key spaces or high-security requirements. |
+
+**Rules:**
+- The chosen algorithm applies to **all** hashkeys (`dv_hashkey_*`) and hashdiffs (`dv_hashdiff`) in the project — do not mix algorithms within a single vault.
+- All BINARY columns in DDL must match the algorithm's output size.
+- Ghost records must use the correct hex string length for the chosen algorithm.
+- Staging views must use the correct function (`MD5_BINARY`, `SHA1_BINARY`, or `SHA2_BINARY`).
+
+**In templates below**, replace:
+- `<hash_fn>` with the Snowflake function name
+- `<hash_size>` with the BINARY size (16, 20, or 32)
+- `<ghost_hex>` with `REPEAT('0', <hash_size * 2>)` (32, 40, or 64 hex chars)
 
 ### Hub load pattern
 ```sql
@@ -144,7 +186,7 @@ WHEN MATCHED THEN UPDATE SET
 - **Satellites** use INSERT-only with anti-semi join `NOT EXISTS` — never MERGE, UPDATE, or DELETE.
 - The `WHEN MATCHED` clause on hubs/links ONLY updates `last_seen_date`. No other column is ever updated.
 - Hash keys use `dv_collisioncode` (BKCC) as discriminator — NOT record source.
-- Hash algorithm is project-configured (default SHA1 → `SHA1_BINARY`, size `BINARY(20)`).
+- Hash algorithm is project-configured (see "Hash algorithm configuration" above). All BINARY column sizes and ghost records must match the chosen algorithm's output size.
 - Record source (`dv_recordsource`) is stored for traceability but NOT part of hash computation.
 - No end-date (LEDTS) column exists in any DVOS table. Satellites are purely insert-only.
 - FK constraints are intentionally omitted from link DDL — orphan checks run post-load.

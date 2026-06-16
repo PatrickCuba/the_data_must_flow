@@ -1,12 +1,12 @@
-# DVOS Skills — Data Vault 2.0 Builder for Snowflake
+# DVOS Skills — Pragmatic Data Vault Builder for Snowflake
 
-A Cortex Code plugin that guides you through designing, validating, generating, and deploying a Data Vault 2.0 implementation on Snowflake. No prior tooling required — just a source system description and your Cortex Code session.
+A Cortex Code plugin that guides you through designing, validating, generating, and deploying a Pragmatic Data Vault implementation on Snowflake. No prior tooling required — just a source system description and your Cortex Code session.
 
 ---
 
 ## What this is
 
-These skills encode Data Vault 2.0 methodology as interactive commands. Each skill handles one phase of the vault-building process. They enforce 42 doctrine rules, suggest the right patterns, and produce Snowflake-optimized SQL you can use directly — without requiring any external framework or pre-built project.
+These skills encode Pragmatic Data Vault methodology as interactive commands. 17 skills handle every phase of the vault-building process. They enforce 42 doctrine rules, suggest the right patterns, and produce Snowflake-optimized SQL you can use directly — without requiring any external framework or pre-built project.
 
 Target platform: **Snowflake**. Generated SQL uses Snowflake-native features: MERGE with last_seen_date for hubs/links, Dynamic Tables for PIT, TRANSIENT schemas for staging, zero-copy cloning for dev/test.
 
@@ -32,26 +32,47 @@ dvos-skills/
 ├── README.md                    This file
 │
 ├── skills/                      User-invokable skills (slash commands)
-│   ├── dv-when.md               /dv-when       Should I use Data Vault?
-│   ├── dv-discover.md           /dv-discover   Analyse sources → propose vault model
-│   ├── dv-model.md              /dv-model      Design a specific construct
-│   ├── dv-validate.md           /dv-validate   Check model against doctrine rules
-│   ├── dv-generate.md           /dv-generate   Produce SQL DDL + load patterns
-│   ├── dv-stage.md              /dv-stage      Staging view design + Snowflake ingestion
-│   ├── dv-mart.md               /dv-mart       Build Information Mart views
-│   ├── dv-explain.md            /dv-explain    Explain any DV2.0 concept
-│   ├── dv-bv.md                 /dv-bv         Business Vault links and satellites
-│   ├── dv-pit-bridge.md         /dv-pit-bridge PIT tables and Bridge tables
-│   ├── dv-load.md               /dv-load       Task DAG orchestration for vault loading
-│   ├── dv-test.md               /dv-test       Integrity test query generation
-│   └── dv-deploy.md             /dv-deploy     Deployment artifacts and environment setup
+│   ├── dv-when/SKILL.md         /dv-when              Should I use Data Vault?
+│   ├── dv-discover/SKILL.md     /dv-discover          Analyse sources → propose vault model
+│   ├── dv-model/SKILL.md        /dv-model             Design a specific construct
+│   ├── dv-validate/SKILL.md     /dv-validate          Check model against doctrine rules
+│   ├── dv-generate/SKILL.md     /dv-generate          Produce SQL DDL + load patterns
+│   ├── dv-stage/SKILL.md        /dv-stage             Staging view design + ingestion
+│   ├── dv-mart/SKILL.md         /dv-mart              Build Information Mart views
+│   ├── dv-explain/SKILL.md      /dv-explain           Explain any DV concept
+│   ├── dv-bv/SKILL.md           /dv-bv                Business Vault links and satellites
+│   ├── dv-bv-activity-schema/   /dv-bv-activity-schema  Activity Schema BV
+│   ├── dv-pit-bridge/SKILL.md   /dv-pit-bridge        PIT tables and Bridge tables
+│   ├── dv-load/SKILL.md         /dv-load              Task DAG orchestration
+│   ├── dv-test/SKILL.md         /dv-test              Integrity test generation
+│   ├── dv-deploy/SKILL.md       /dv-deploy            Deployment artifacts
+│   ├── dv-xts/SKILL.md          /dv-xts               XTS late-arriving data
+│   ├── dv-supernova/SKILL.md    /dv-supernova         Pre-materialised IM (DTs)
+│   └── dv-migrate/SKILL.md      /dv-migrate           Platform migration
 │
-└── agents/                      Subagent instruction files (not invoked directly)
-    ├── doctrine-enforcer.md     42 doctrine rules, returns structured violation list
-    ├── source-profiler.md       Reads source schemas, surfaces business key signals
-    ├── pattern-recommender.md   Chooses the right satellite variant (8 options)
-    ├── sql-generator.md         Produces DDL and Snowflake-native load SQL
-    └── naming-advisor.md        Checks all naming conventions
+├── agents/                      Subagent instruction files (not invoked directly)
+│   ├── doctrine-enforcer.md     42 doctrine rules, returns structured violation list
+│   ├── source-profiler.md       Reads source schemas, surfaces business key signals
+│   ├── pattern-recommender.md   Chooses the right satellite variant (10 options)
+│   ├── sql-generator.md         Produces DDL and Snowflake-native load SQL
+│   ├── naming-advisor.md        Checks all naming conventions
+│   └── staging-validator.md     Validates staging views against DV-STG rules
+│
+├── examples/                    Runnable SQL examples (one per pattern)
+│   ├── 01_standard_batch_vault.sql    Standard batch hub/link/sat/IM
+│   ├── 02_satellite_variants.sql      All 8 satellite types + hybrid
+│   ├── 03_kappa_vault.sql             Event-driven streams + tasks
+│   ├── 04_xts_late_arriving.sql       XTS timeline correction
+│   ├── 05_activity_schema.sql         Activity Schema BV pattern
+│   ├── 06_supernova.sql               5-layer pre-materialised DTs
+│   ├── 07_pit_bridge.sql              SNOPIT + Bridge as DTs
+│   ├── 08_bv_link_and_sal.sql         BV link + SAL entity resolution
+│   └── 09_not_a_good_fit.sql          When DV is overkill (medallion)
+│
+├── templates/                   Reusable SQL templates (DDL, loads, views)
+├── dmf/                         Data Metric Functions (DQ framework)
+├── reference/                   Doctrine rules + naming conventions
+└── hooks/                       Pre-generation doctrine check hook
 ```
 
 ### Skills vs. agents — what is the difference?
@@ -214,12 +235,14 @@ Design one construct at a time with full column definitions, naming, hash key fo
 |---|---|
 | Standard (`standard`) | One active row per key, history tracked |
 | Multi-active (`ma`) | Multiple rows active simultaneously (e.g. phone numbers) |
+| Partitioned multi-active (`pma`) | Independent subsets versioned per dep-child key (advanced) |
 | Effectivity (`ef`) | Tracks relationship lifecycle — link-only, `dv_start_date` + `dv_end_date` |
 | Dependent-child (`dp`) | Parent key is not unique alone (needs a child discriminator) |
 | Non-historized (`nh`) | Reference data, no history needed, no `dv_hashdiff` |
 | Status tracking (`st`) | Tracks a status/state column over time via secondary staging |
 | Record tracking (`rt`) | Tracks presence/absence of a record in the source |
 | Extended tracking/XTS (`xt`) | File-based ingestion with timeline correction (advanced) |
+| Hybrid (`hybrid`) | ODV — sub-300ms OLTP latency via Snowflake Hybrid Tables |
 
 **PII is a naming suffix** (`_pii` in the satellite name), not a distinct type. Any satellite variant can have a PII suffix to segregate sensitive columns into a separate physical table with independent access control.
 
@@ -347,10 +370,17 @@ Derived or calculated attributes (e.g. metrics, scores) are loaded into a standa
 | `/dv-model` | `hub link satellite pit bridge sal` | Business concept or attribute list | Full construct definition with DDL |
 | `/dv-validate` | `model manifest naming` | Construct definition | Violation and warning report |
 | `/dv-generate` | — | Validated construct | CREATE TABLE DDL + load pattern |
+| `/dv-stage` | — | Source landing tables | Staging views with hashkey/hashdiff |
 | `/dv-load` | — | Generated constructs | Snowflake Task DAG with dependencies |
 | `/dv-deploy` | — | Project schema names | Schemas, roles, grants, deploy scripts |
 | `/dv-test` | — | Vault tables | Integrity test SQL queries |
 | `/dv-mart` | — | Hub + satellite list | IM view SQL |
+| `/dv-bv` | — | Business rule definition | BV link/satellite + staging |
+| `/dv-pit-bridge` | — | Hub with 3+ satellites | PIT/Bridge as Dynamic Tables |
+| `/dv-xts` | — | Late-arriving source | XTS DDL + timeline correction load |
+| `/dv-supernova` | — | Performance-critical IM | 5-layer pre-materialised DTs |
+| `/dv-migrate` | — | Legacy vault platform | Migration strategy + validation |
+| `/dv-bv-activity-schema` | — | Activity unification need | Activity Schema BV pipeline |
 | `/dv-explain` | `<any concept>` | Concept name or question | Plain-language explanation |
 
 ---

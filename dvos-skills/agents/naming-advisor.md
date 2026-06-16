@@ -59,9 +59,9 @@ All link names include a **vault layer marker** (`RV` or `BV`) and optionally a 
 | Link type | Pattern | Example |
 |---|---|---|
 | RV Standard | `LNK_RV_{name}` | `LNK_RV_CUSTOMER_ACCOUNT_PRODUCT` |
-| RV Same-As | `LNK_SA_RV_{name}` | `LNK_SA_RV_MAP_MDM_ACCOUNT` |
-| RV Hierarchical | `LNK_HY_RV_{name}` | `LNK_HY_RV_ZOHO_EMPLOYEE_MANAGER` |
-| RV Non-Historized | `LNK_NH_RV_{name}` | `LNK_NH_RV_ZOHO_EMPLOYEE_ACCOUNT` |
+| RV Same-As | `LNK_RV_SA_{name}` | `LNK_RV_SA_CUSTOMER_MATCH` |
+| RV Hierarchical | `LNK_RV_HY_{name}` | `LNK_RV_HY_EMPLOYEE_MANAGER` |
+| RV Non-Historized | `LNK_RV_NH_{name}` | `LNK_RV_NH_EMPLOYEE_ACCOUNT` |
 | BV Standard | `LNK_BV_{name}` | `LNK_BV_CARD_ACCOUNT_ASSIGNMENT` |
 
 Flag `LNK_<name>` (no vault layer marker) as a violation.
@@ -97,13 +97,14 @@ BV satellites use `concept_name` instead of `{badge}_{file}`. The badge is alway
 
 Flag `SAT_BV_<name>` where `<name>` looks like `{badge}_{file}` (contains a source badge prefix like `sapbw_`, `mdm_`, `xero_`) as a violation — BV satellites use a business concept name, not a source badge.
 
-### Same-As Links (SAL)
+### Same-As Links
 
-- Must start with `SAL_`
-- Pattern: `SAL_<ENTITY>` — e.g. `SAL_CUSTOMER`, `SAL_PRODUCT`
-- Their effectivity satellites: `SAT_SAL_<ENTITY>_EFF`
-- SAL hash key column: `dv_hashkey_sal_<entity>` (NOT `SAL_<ENTITY>_HK`)
-- SAL hub key columns: `dv_hashkey_hub_<entity>_a` and `dv_hashkey_hub_<entity>_b`
+- Same-as links ARE links — they use the link prefix with `SA` type marker
+- RV pattern: `LNK_RV_SA_{relationship_name}` — e.g. `LNK_RV_SA_CUSTOMER_MATCH`
+- BV pattern: `LNK_BV_SA_{relationship_name}` — e.g. `LNK_BV_SA_CUSTOMER_GOLDEN`
+- Hash key column: `dv_hashkey_lnk_rv_sa_<name>` (follows the table name)
+- Their effectivity satellites: `SAT_EF_RV_LNK_{badge}_{file}` (standard link satellite pattern)
+- Hub key columns: `dv_hashkey_hub_<entity>_a` and `dv_hashkey_hub_<entity>_b`
 
 ### PIT tables
 
@@ -146,7 +147,7 @@ Flag `SAT_BV_<name>` where `<name>` looks like `{badge}_{file}` (contains a sour
 |---|---|---|
 | Hub hash key | `dv_hashkey_hub_<name>` | `<NAME>_HK` |
 | Link hash key | `dv_hashkey_lnk_<name>` | `<NAME>_HK` |
-| SAL hash key | `dv_hashkey_sal_<entity>` | `SAL_<ENTITY>_HK` |
+| Same-As Link hash key | `dv_hashkey_lnk_rv_sa_<name>` | `SAL_<ENTITY>_HK` |
 | Hash diff | `dv_hashdiff` | `HDIFF`, `HASH_DIFF` |
 | Load timestamp | `dv_load_timestamp` | `LDTS`, `LOAD_DATE` |
 | Applied timestamp | `dv_applied_timestamp` | `RDTS`, `BATCH_DATE` |
