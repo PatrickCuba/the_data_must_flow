@@ -15,9 +15,18 @@ Target platform: **Snowflake**. Generated SQL uses Snowflake-native features: ME
 ## Prerequisites
 
 - **Cortex Code** installed and running (CoCo desktop or CLI)
-- Plugin installed at `~/.snowflake/cortex/plugins/dvos-data-vault/` (this folder)
 - No additional packages or databases required to design and model
 - A Snowflake account when you are ready to execute the generated SQL
+
+## Installation
+
+Copy the plugin to CoCo's home directory:
+
+```bash
+cp -r /path/to/dvos-skills ~/.snowflake/cortex/plugins/dvos-data-vault
+```
+
+Restart CoCo (or open a new session). The `/dv-*` slash commands will be available immediately.
 
 ---
 
@@ -70,6 +79,43 @@ dvos-skills/
 │   └── 09_not_a_good_fit.sql          When DV is overkill (medallion)
 │
 ├── templates/                   Reusable SQL templates (DDL, loads, views)
+│   ├── hub_ddl.sql              Hub CREATE TABLE
+│   ├── link_ddl.sql             Link CREATE TABLE
+│   ├── sat_standard_ddl.sql     Standard satellite DDL
+│   ├── sat_multi_active_ddl.sql Multi-active satellite DDL
+│   ├── sat_dependent_child_ddl.sql  Dependent-child satellite DDL
+│   ├── sat_effectivity_ddl.sql  Effectivity satellite DDL (link-only)
+│   ├── sat_status_tracking_ddl.sql  Status tracking satellite DDL
+│   ├── sat_record_tracking_ddl.sql  Record tracking satellite DDL
+│   ├── sat_extended_tracking_ddl.sql XTS satellite DDL
+│   ├── load_hub_merge.sql       Hub MERGE load (INSERT + last_seen_date)
+│   ├── load_lnk_insert.sql      Link INSERT (anti-semi-join, no last_seen)
+│   ├── load_sat_insert.sql      Satellite INSERT (hashdiff anti-semi-join)
+│   ├── ghost_record_insert.sql  Ghost record idempotent INSERT
+│   ├── hashkey_computation.sql  SHA1_BINARY hashkey expression
+│   ├── view_vc_current.sql      Current-state satellite view (ROW_NUMBER)
+│   ├── view_vh_history.sql      History satellite view (LEAD end-date)
+│   ├── stg_ef_secondary.sql     Effectivity secondary staging
+│   ├── stg_rt_secondary.sql     Record tracking secondary staging
+│   ├── stg_st_secondary.sql     Status tracking secondary staging
+│   ├── stg_xt_secondary.sql     Extended tracking secondary staging
+│   ├── asof_date_ddl.sql        ASOF calendar table (PIT cadence control)
+│   ├── pit_hub_ddl.sql          PIT DDL (hub + 3 sats, FK constraints)
+│   ├── pit_lnk_ddl.sql          PIT DDL (link + 3 sats)
+│   ├── pit_hub_insert.sql       PIT standalone INSERT (correlated subquery)
+│   ├── snopit_hub_ddl.sql       SNOPIT DDL (hub + 3 sats, dv_sid)
+│   ├── snopit_lnk_ddl.sql       SNOPIT DDL (link + 3 sats)
+│   ├── snopit_hub_insert.sql    SNOPIT standalone INSERT
+│   ├── cpit_ddl.sql             Current PIT (TRANSIENT, thin schema)
+│   ├── pit_snopit_multi_table_insert.sql  Multi-table INSERT (ASOF routing)
+│   ├── bridge_relationship_ddl.sql  Bridge DDL + INSERT (metrics + dv_sid)
+│   ├── dt_pit_hub.sql           DT PIT hub (LAG IGNORE NULLS, INCREMENTAL)
+│   ├── dt_pit_lnk.sql           DT PIT link
+│   ├── dt_snopit_hub.sql        DT SNOPIT hub
+│   ├── dt_snopit_lnk.sql        DT SNOPIT link
+│   ├── dt_cpit.sql              DT Current PIT (QUALIFY ROW_NUMBER)
+│   ├── im_view_pit.sql          IM view consuming PIT (hashkey+appliedts)
+│   └── im_view_snopit.sql       IM view consuming SNOPIT (dv_sid equi-join)
 ├── dmf/                         Data Metric Functions (DQ framework)
 ├── reference/                   Doctrine rules + naming conventions
 └── hooks/                       Pre-generation doctrine check hook
@@ -542,20 +588,34 @@ Full rule list lives in `agents/doctrine-enforcer.md`.
 | Object | Convention | Example |
 |---|---|---|
 | Hub | `HUB_<SINGULAR>` | `HUB_CUSTOMER` |
-| Link | `LNK_<RELATIONSHIP>` | `LNK_CUSTOMER_ORDER` |
-| Satellite | `SAT_<PARENT>_<CONTEXT>` | `SAT_CUSTOMER_DEMOGRAPHICS` |
-| Same-as link | `SAL_<ENTITY>` | `SAL_CUSTOMER` |
-| PIT | `PIT_<HUB>` | `PIT_CUSTOMER` |
-| Bridge | `BDG_<CONCEPT>_<PERIOD>` | `BDG_PARTYACCOUNT_DAILY` |
+| Link (RV) | `LNK_RV_<RELATIONSHIP>` | `LNK_RV_CUSTOMER_ACCOUNT` |
+| Link (BV) | `LNK_BV_<RELATIONSHIP>` | `LNK_BV_ACCOUNT_LINEAGE` |
+| Same-as link | `LNK_RV_SA_<NAME>` | `LNK_RV_SA_CUSTOMER_MATCH` |
+| Hierarchical link | `LNK_RV_HY_<NAME>` | `LNK_RV_HY_EMPLOYEE_MANAGER` |
+| Satellite (RV) | `SAT_RV_<HUB\|LNK>_<BADGE>_<FILE>[_SPEC]` | `SAT_RV_HUB_SF_CUSTOMER_DEMOGRAPHICS` |
+| Satellite (RV variant) | `SAT_<TYPE>_RV_<HUB\|LNK>_<BADGE>_<FILE>` | `SAT_MA_RV_HUB_CRM_CUSTOMER_CONTACTS` |
+| Satellite (BV) | `SAT_BV_<CONCEPT>` | `SAT_BV_CUSTOMER_CREDIT_SCORE` |
+| Satellite (BV variant) | `SAT_BV_<TYPE>_<CONCEPT>` | `SAT_BV_NH_CUSTOMER_STREAM` |
+| XTS | `SAT_XT_<PARENT_TYPE>_<PARENT>` | `SAT_XT_HUB_POLICY` |
+| PIT | `PIT_<PARENT>_<CADENCE>` | `PIT_CUSTOMER_DAILY` |
+| SNOPIT | `SNOPIT_<PARENT>_<CADENCE>` | `SNOPIT_CUSTOMER_DAILY` |
+| Bridge | `BRDG_<CONCEPT>_<CADENCE>` | `BRDG_CUSTOMER_PRODUCT_DAILY` |
 | IM dimension | `DIM_<ENTITY>` | `DIM_CUSTOMER` |
 | IM fact | `FACT_<RELATIONSHIP>` | `FACT_ORDER` |
-| Satellite current view | `VC_<SAT_NAME>` | `VC_SAT_CUSTOMER_DEMOGRAPHICS` |
-| Satellite history view | `VH_<SAT_NAME>` | `VH_SAT_CUSTOMER_DEMOGRAPHICS` |
-| Hash key column (hub) | `dv_hashkey_hub_<name>` | `dv_hashkey_hub_customer` |
-| Hash key column (link) | `dv_hashkey_<link_full_name>` | `dv_hashkey_lnk_customer_order` |
-| Load timestamp | `dv_load_timestamp` | |
-| Applied timestamp | `dv_applied_timestamp` | |
-| Hash diff | `dv_hashdiff` | |
-| Record source | `dv_recordsource` | |
-| Collision code | `dv_collisioncode` | |
+| Satellite current view | `VC_<SAT_NAME>` | `VC_SAT_RV_HUB_SF_CUSTOMER_DEMOGRAPHICS` |
+| Satellite history view | `VH_<SAT_NAME>` | `VH_SAT_RV_HUB_SF_CUSTOMER_DEMOGRAPHICS` |
+| Stream | `STR_<PURPOSE>` | `STR_STG_XERO_HUB_ACCOUNT` |
+| Task | `TSK_<PURPOSE>` | `TSK_KAPPA_LOAD_HUB_ACCOUNT` |
+| Staging view | `STG_<BADGE>_<SOURCE>` | `STG_SF_CUSTOMER` |
+| Hash key (hub) | `dv_hashkey_hub_<name>` | `dv_hashkey_hub_customer` |
+| Hash key (link) | `dv_hashkey_lnk_<prefix>_<name>` | `dv_hashkey_lnk_rv_customer_account` |
+| Load timestamp | `dv_load_timestamp` | TIMESTAMP_NTZ |
+| Applied timestamp | `dv_applied_timestamp` | TIMESTAMP_NTZ |
+| Hash diff | `dv_hashdiff` | BINARY(20) |
+| Record source | `dv_recordsource` | VARCHAR(255) |
+| Collision code | `dv_collisioncode` | VARCHAR(50) |
+| Tenant ID | `dv_tenant_id` | VARCHAR(50) |
+| Sequence ID | `dv_sid` | NUMBER IDENTITY START 0 INCREMENT 1 ORDER |
+| Ghost hashkey | `TO_BINARY(REPEAT(0, 20))` | 20 zero-bytes |
+| Ghost timestamp | `TO_TIMESTAMP('1900-01-01 00:00:00')` | Epoch placeholder |
 | End-date | **does not exist** — DVOS is insert-only, no LEDTS | |
