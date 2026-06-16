@@ -58,7 +58,7 @@ Return JSON:
 - **DV-LNK-001** Link must reference at least 2 hub hash keys
 - **DV-LNK-002** Link must have its own hash key computed from all referenced hub hash keys (column: `dv_hashkey_<link_full_name>`)
 - **DV-LNK-003** Link must have `dv_load_timestamp` and `dv_recordsource`
-- **DV-LNK-004** Link must not contain descriptive attributes (use `SAT_LNK_<NAME>`)
+- **DV-LNK-004** Link must not contain descriptive attributes (use `SAT_RV_LNK_{badge}_{file}`)
 - **DV-LNK-005** Link name must begin with `lnk_` (generated form) / `LNK_` (DDL)
 - **DV-LNK-006** FK constraints must NOT be in link DDL — deferred to orphan-check phase
 

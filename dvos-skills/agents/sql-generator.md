@@ -76,6 +76,8 @@ SHA1_BINARY(UPPER(CONCAT(
 
 **Note on types:** The templates below show default types. All types are project-configurable:
 - Hash key size: `BINARY(20)` for SHA1 (default), `BINARY(16)` for MD5, `BINARY(32)` for SHA256
+- Ghost record: `TO_BINARY(REPEAT('0', <hash_size * 2>), 'HEX')` — where `<hash_size * 2>` = 32 (MD5), 40 (SHA1), 64 (SHA256)
+- Hash function: `MD5_BINARY(...)` for MD5, `SHA1_BINARY(...)` for SHA1, `SHA2_BINARY(...)` for SHA256
 - `VARCHAR(255)` for `dv_recordsource`, `dv_task_id`, `dv_jira_id`, `dv_user_id`, business keys
 - `VARCHAR(50)` for `dv_tenant_id`, `dv_collisioncode`
 - Use the project manifest to override any type. If the user specifies different sizes, use those.
@@ -154,6 +156,31 @@ CREATE TABLE IF NOT EXISTS <schema>.SAT_<PARENT>_<CONTEXT> (
     -- descriptive columns here
     dv_sid                   NUMBER           IDENTITY START 0 INCREMENT 1 ORDER,
     CONSTRAINT pk_sat_<parent>_<context> PRIMARY KEY (dv_hashkey_hub_<parent>, dv_sequence, dv_load_timestamp) NOT ENFORCED
+);
+```
+
+### Dependent-child satellite (same DDL as MSAT — load logic differs)
+```sql
+-- DDL is identical to MSAT — PK: (hashkey, dv_sequence, dv_load_timestamp)
+-- Dep-child key is a regular NOT NULL column, NOT part of the PK.
+-- Load logic difference: change detection per (hashkey, dep_child_key) ROW
+-- (not full SET like MSAT). PMAS uses SET comparison scoped to (hashkey, dep_child_key).
+CREATE TABLE IF NOT EXISTS <schema>.SAT_<PARENT>_<CONTEXT> (
+    dv_hashkey_hub_<parent>  BINARY(20)       NOT NULL,
+    dv_tenant_id             VARCHAR(50),
+    dv_task_id               VARCHAR(255),
+    dv_jira_id               VARCHAR(255),
+    dv_user_id               VARCHAR(255),
+    dv_recordsource          VARCHAR(255)     NOT NULL,
+    dv_hashdiff              BINARY(20)       NOT NULL,
+    dv_sequence              NUMBER           NOT NULL,  -- sub-sequence ordinal
+    dv_applied_timestamp     TIMESTAMP_NTZ    NOT NULL,
+    dv_load_timestamp        TIMESTAMP_NTZ    NOT NULL,
+    <dep_child_key>          <type>           NOT NULL,  -- dep-child key (NOT in PK)
+    -- descriptive columns here
+    dv_sid                   NUMBER           IDENTITY START 0 INCREMENT 1 ORDER,
+    CONSTRAINT pk_sat_<parent>_<context>
+        PRIMARY KEY (dv_hashkey_hub_<parent>, dv_sequence, dv_load_timestamp) NOT ENFORCED
 );
 ```
 
@@ -259,7 +286,7 @@ sat1_latest AS (
 SELECT
     h.dv_hashkey_hub_<hub>,
     d.snapshot_date,
-    COALESCE(s1.dv_hashkey_hub_<hub>, TO_BINARY(REPEAT(0, 20))) AS <sat1_alias>_dv_hashkey_hub_<hub>,
+    COALESCE(s1.dv_hashkey_hub_<hub>, TO_BINARY(REPEAT('0', <hash_size*2>), 'HEX')) AS <sat1_alias>_dv_hashkey_hub_<hub>,
     COALESCE(s1.dv_applied_timestamp, '1900-01-01'::TIMESTAMP)  AS <sat1_alias>_dv_applied_timestamp
     -- Repeat per satellite
 FROM <vault_schema>.HUB_<HUB> h
@@ -317,6 +344,598 @@ JOIN <vault_schema>.HUB_<ENTITY> h ON h.dv_hashkey_hub_<entity> = pit.dv_hashkey
 LEFT JOIN <vault_schema>.SAT_<ENTITY>_<CONTEXT1> s1
     ON s1.dv_hashkey_hub_<entity> = pit.dv_hashkey_hub_<entity>
    AND s1.dv_applied_timestamp = pit.<sat1_alias>_dv_applied_timestamp;
+```
+
+---
+
+## Fact bridge — DDL and population query
+
+### Bridge table DDL
+
+```sql
+-- Fact bridge driven by a link satellite (measures).
+-- Stores DV_SID locators + persisted metrics. Refreshed via INSERT OVERWRITE or Dynamic Table.
+CREATE OR REPLACE TABLE <schema>.BDG_<NAME>
+(
+    -- Metadata columns
+    dv_load_timestamp             TIMESTAMP_NTZ   NOT NULL,
+    dv_loaddts              TIMESTAMP_NTZ   NOT NULL,
+    dv_record_source        VARCHAR(255)    NOT NULL,
+
+    -- Hash-key locators (never expose in IM views)
+    dv_hashkey_hub_<hub1_name>              BINARY(20)  NOT NULL,
+    dv_hashkey_hub_<hub2_name>              BINARY(20)  NOT NULL,
+    dv_hashkey_lnk_<link_name>             BINARY(20)  NOT NULL,
+
+    -- DV_SID locators (0 = no record at this point in time)
+    sat_<hub1_name>_dv_sid                 INTEGER     NOT NULL DEFAULT 0,
+    sat_<hub2_name>_dv_sid                 INTEGER     NOT NULL DEFAULT 0,
+    sat_lnk_<link_name>_dv_sid             INTEGER     NOT NULL DEFAULT 0,
+
+    -- Date dimension join key
+    date_sid                               INTEGER     NOT NULL,
+
+    -- Persisted metrics from link satellite (measures)
+    <metric_col_1>                         NUMBER(18,2),
+    <metric_col_2>                         NUMBER(18,2),
+
+    -- Running / cumulative metrics (computed at load time)
+    running_<metric_col_1>                 NUMBER(18,2),
+
+    CONSTRAINT pk_bdg_<name>
+        PRIMARY KEY (dv_hashkey_lnk_<link_name>, dv_load_timestamp) NOT ENFORCED
+)
+DATA_RETENTION_TIME_IN_DAYS = 1;
+```
+
+### Bridge population query
+
+Uses LEAD to compute `dv_applied_timestamp_end` per satellite, then temporally aligns hub satellites to the link satellite's effective period. All joins resolve at load time — the IM view uses only DV_SID equi-joins.
+
+```sql
+INSERT OVERWRITE INTO <schema>.BDG_<NAME>
+WITH
+
+-- Step 1: Version the link satellite (measures — drives the grain)
+sat_link_v AS (
+    SELECT
+        dv_hashkey_lnk_<link_name>,
+        dv_hashkey_hub_<hub1_name>,
+        dv_hashkey_hub_<hub2_name>,
+        dv_load_timestamp,
+        dv_loaddts,
+        dv_record_source,
+        dv_applied_timestamp,
+        dv_sid                      AS lnk_sat_dv_sid,
+        <metric_col_1>,
+        <metric_col_2>,
+        LEAD(dv_applied_timestamp, 1, '9999-12-31'::DATE)
+            OVER (PARTITION BY dv_hashkey_lnk_<link_name>
+                  ORDER BY dv_applied_timestamp)          AS dv_applied_timestamp_end
+    FROM <schema>.SAT_NH_RV_LNK_<LINK_NAME>_<BADGE>
+    WHERE dv_deleteflag IS NULL OR dv_deleteflag = 'N'
+),
+
+-- Step 2: Version hub1 satellite for temporal alignment
+sat_hub1_v AS (
+    SELECT
+        dv_hashkey_hub_<hub1_name>,
+        dv_applied_timestamp,
+        dv_sid                      AS hub1_dv_sid,
+        LEAD(dv_applied_timestamp, 1, '9999-12-31'::DATE)
+            OVER (PARTITION BY dv_hashkey_hub_<hub1_name>
+                  ORDER BY dv_applied_timestamp)          AS dv_applied_timestamp_end
+    FROM <schema>.SAT_RV_HUB_<HUB1_NAME>_<BADGE>
+    WHERE dv_deleteflag IS NULL OR dv_deleteflag = 'N'
+),
+
+-- Step 3: Version hub2 satellite for temporal alignment
+sat_hub2_v AS (
+    SELECT
+        dv_hashkey_hub_<hub2_name>,
+        dv_applied_timestamp,
+        dv_sid                      AS hub2_dv_sid,
+        LEAD(dv_applied_timestamp, 1, '9999-12-31'::DATE)
+            OVER (PARTITION BY dv_hashkey_hub_<hub2_name>
+                  ORDER BY dv_applied_timestamp)          AS dv_applied_timestamp_end
+    FROM <schema>.SAT_RV_HUB_<HUB2_NAME>_<BADGE>
+    WHERE dv_deleteflag IS NULL OR dv_deleteflag = 'N'
+)
+
+-- Step 4: Assemble bridge rows
+SELECT
+    sl.dv_load_timestamp,
+    sl.dv_loaddts,
+    sl.dv_record_source,
+
+    -- Hash-key locators
+    sl.dv_hashkey_hub_<hub1_name>,
+    sl.dv_hashkey_hub_<hub2_name>,
+    sl.dv_hashkey_lnk_<link_name>,
+
+    -- DV_SID locators (0 when no satellite record exists at this point in time)
+    COALESCE(sh1.hub1_dv_sid, 0)    AS sat_<hub1_name>_dv_sid,
+    COALESCE(sh2.hub2_dv_sid, 0)    AS sat_<hub2_name>_dv_sid,
+    sl.lnk_sat_dv_sid               AS sat_lnk_<link_name>_dv_sid,
+
+    -- Date dimension join key
+    YEAR(sl.dv_load_timestamp)  * 10000
+    + MONTH(sl.dv_load_timestamp) * 100
+    + DAY(sl.dv_load_timestamp)           AS date_sid,
+
+    -- Direct metrics from link satellite
+    sl.<metric_col_1>,
+    sl.<metric_col_2>,
+
+    -- Running / cumulative metric (window computed at load time)
+    SUM(sl.<metric_col_1>)
+        OVER (PARTITION BY sl.dv_hashkey_hub_<hub1_name>
+              ORDER BY sl.dv_load_timestamp
+              ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+                                    AS running_<metric_col_1>
+
+FROM sat_link_v sl
+
+-- Temporally align hub1 satellite
+LEFT JOIN sat_hub1_v sh1
+    ON  sh1.dv_hashkey_hub_<hub1_name> = sl.dv_hashkey_hub_<hub1_name>
+    AND sh1.dv_applied_timestamp             <= sl.dv_applied_timestamp
+    AND sh1.dv_applied_timestamp_end         >= sl.dv_applied_timestamp_end
+
+-- Temporally align hub2 satellite
+LEFT JOIN sat_hub2_v sh2
+    ON  sh2.dv_hashkey_hub_<hub2_name> = sl.dv_hashkey_hub_<hub2_name>
+    AND sh2.dv_applied_timestamp             <= sl.dv_applied_timestamp
+    AND sh2.dv_applied_timestamp_end         >= sl.dv_applied_timestamp_end;
+```
+
+### Fact bridge IM view (DV_SID equi-join — no temporal logic at query time)
+
+```sql
+CREATE OR REPLACE VIEW <im_schema>.FACT_<NAME> AS
+SELECT
+    brdg.date_sid,
+    brdg.<metric_col_1>,
+    brdg.<metric_col_2>,
+    brdg.running_<metric_col_1>,
+    sat_hub1.<hub1_descriptive_col>,
+    sat_hub2.<hub2_descriptive_col>
+FROM <schema>.BDG_<NAME>          brdg
+LEFT JOIN <schema>.SAT_NH_RV_LNK_<LINK_NAME>_<BADGE>   sat_link
+    ON brdg.sat_lnk_<link_name>_dv_sid = sat_link.dv_sid
+LEFT JOIN <schema>.SAT_RV_HUB_<HUB1_NAME>_<BADGE>       sat_hub1
+    ON brdg.sat_<hub1_name>_dv_sid      = sat_hub1.dv_sid
+LEFT JOIN <schema>.SAT_RV_HUB_<HUB2_NAME>_<BADGE>       sat_hub2
+    ON brdg.sat_<hub2_name>_dv_sid      = sat_hub2.dv_sid
+-- No date-range predicates here; temporal resolution was done at bridge load time
+;
+```
+
+---
+
+## XTS-assisted satellite loading
+
+Use this section when generating artefacts for the `/dv-xts` skill. Apply when `xts_assisted: true` in the satellite manifest.
+
+### Satellite DDL modification
+
+When `xts_assisted: true`, add one column to the satellite after `dv_sid`:
+
+```sql
+dv_xts_event  VARCHAR(20),  -- 'insert' (new record) or 'copy' (timeline correction)
+```
+
+No other satellite DDL change is needed.
+
+### XTS table DDL
+
+```sql
+CREATE TRANSIENT TABLE IF NOT EXISTS <schema>.SAT_XT_HUB_<PARENT>
+(
+    dv_tenant_id              VARCHAR(50),
+    dv_hashkey_hub_<parent>  BINARY(20)    NOT NULL,
+    dv_load_timestamp        TIMESTAMP_NTZ NOT NULL,
+    dv_applied_timestamp     TIMESTAMP_NTZ NOT NULL,
+    dv_recordsource          VARCHAR(255)  NOT NULL,
+    dv_hashdiff              BINARY(20)    NOT NULL,
+    dv_rectarget             VARCHAR(40)   NOT NULL,
+    dv_sequence_violation    BOOLEAN       NOT NULL,
+    CONSTRAINT pk_sat_xt_hub_<parent>
+        PRIMARY KEY (dv_hashkey_hub_<parent>, dv_load_timestamp) NOT ENFORCED
+)
+DATA_RETENTION_TIME_IN_DAYS = 1;
+```
+
+### The SWITCH — out-of-sequence detection
+
+```sql
+SET xts_out_of_sequence_event = FALSE;
+
+SET xts_out_of_sequence_event = (
+    WITH staged_max AS (SELECT MAX(dv_applied_timestamp) AS stg_max_date FROM staged.<source>),
+         target_max AS (SELECT MAX(dv_applied_timestamp) AS sat_max_date FROM <vault_schema>.<satellite>)
+    SELECT CASE WHEN stg_max_date < sat_max_date THEN TRUE ELSE FALSE END AS test
+    FROM staged_max, target_max
+);
+```
+
+### XTS INSERT (always runs)
+
+```sql
+INSERT INTO <vault_schema>.SAT_XT_HUB_<PARENT>
+    (dv_tenant_id, dv_hashkey_hub_<parent>, dv_load_timestamp, dv_applied_timestamp,
+     dv_recordsource, dv_hashdiff, dv_rectarget, dv_sequence_violation)
+SELECT DISTINCT
+    dv_tenant_id, dv_hashkey_hub_<parent>, dv_load_timestamp, dv_applied_timestamp,
+    dv_recordsource, dv_hashdiff_<satellite> AS dv_hashdiff,
+    dv_rectarget_<satellite> AS dv_rectarget,
+    $xts_out_of_sequence_event AS dv_sequence_violation
+FROM staged.<source> stg
+WHERE NOT EXISTS (
+    SELECT 1 FROM (
+        SELECT dv_hashkey_hub_<parent>, dv_hashdiff, dv_rectarget, dv_applied_timestamp, dv_load_timestamp,
+               RANK() OVER (PARTITION BY dv_hashkey_hub_<parent>, dv_applied_timestamp
+                            ORDER BY dv_load_timestamp DESC) AS dv_rnk
+        FROM <vault_schema>.SAT_XT_HUB_<PARENT>
+        QUALIFY dv_rnk = 1
+    ) cur
+    WHERE stg.dv_hashkey_hub_<parent>  = cur.dv_hashkey_hub_<parent>
+      AND stg.dv_applied_timestamp           = cur.dv_applied_timestamp
+      AND stg.dv_load_timestamp              = cur.dv_load_timestamp
+      AND stg.dv_hashdiff_<satellite>  = cur.dv_hashdiff
+      AND stg.dv_rectarget_<satellite> = cur.dv_rectarget
+);
+```
+
+### XTS-assisted satellite load (run when SWITCH = TRUE)
+
+```sql
+INSERT INTO <vault_schema>.<satellite>
+    (dv_tenant_id, dv_hashkey_hub_<parent>, dv_load_timestamp, dv_applied_timestamp,
+     dv_recordsource, dv_hashdiff, dv_xts_event, <business_columns>)
+
+WITH previous_xts AS (
+    -- Latest XTS where staging has a NEWER record (record before the late-arriving point)
+    SELECT dv_hashkey_hub_<parent>, dv_hashdiff, dv_applied_timestamp, dv_load_timestamp,
+           RANK() OVER (PARTITION BY dv_hashkey_hub_<parent>
+                        ORDER BY dv_applied_timestamp DESC, dv_load_timestamp DESC) AS dv_rnk
+    FROM <vault_schema>.SAT_XT_HUB_<PARENT>
+    WHERE dv_rectarget = '<satellite_name>'
+      AND EXISTS (SELECT 1 FROM staged.<source> stg
+                  WHERE stg.dv_hashkey_hub_<parent> = SAT_XT_HUB_<PARENT>.dv_hashkey_hub_<parent>
+                    AND stg.dv_applied_timestamp > SAT_XT_HUB_<PARENT>.dv_applied_timestamp)
+    QUALIFY dv_rnk = 1
+),
+next_xts AS (
+    -- Latest XTS where staging has an EARLIER record (record after the late-arriving point)
+    SELECT dv_hashkey_hub_<parent>, dv_hashdiff, dv_applied_timestamp, dv_load_timestamp,
+           RANK() OVER (PARTITION BY dv_hashkey_hub_<parent>
+                        ORDER BY dv_applied_timestamp DESC, dv_load_timestamp DESC) AS dv_rnk
+    FROM <vault_schema>.SAT_XT_HUB_<PARENT>
+    WHERE dv_rectarget = '<satellite_name>'
+      AND EXISTS (SELECT 1 FROM staged.<source> stg
+                  WHERE stg.dv_hashkey_hub_<parent> = SAT_XT_HUB_<PARENT>.dv_hashkey_hub_<parent>
+                    AND stg.dv_applied_timestamp < SAT_XT_HUB_<PARENT>.dv_applied_timestamp)
+    QUALIFY dv_rnk = 1
+)
+
+-- Part 1: INSERT new record
+SELECT DISTINCT dv_tenant_id, dv_hashkey_hub_<parent>, dv_load_timestamp, dv_applied_timestamp,
+                dv_recordsource, dv_hashdiff_<satellite> AS dv_hashdiff,
+                'insert' AS dv_xts_event, <business_columns>
+FROM staged.<source> stg
+WHERE EXISTS (
+    SELECT 1 FROM staged.<source> dlt
+    WHERE NOT EXISTS (
+        SELECT 1 FROM previous_xts xts
+        WHERE xts.dv_hashkey_hub_<parent> = dlt.dv_hashkey_hub_<parent>
+          AND xts.dv_hashdiff = dlt.dv_hashdiff_<satellite>
+    )
+    AND stg.dv_hashkey_hub_<parent> = dlt.dv_hashkey_hub_<parent>
+)
+AND NOT EXISTS (
+    SELECT 1 FROM staged.<source> dlt
+    INNER JOIN <vault_schema>.<satellite> sat
+        ON dlt.dv_hashkey_hub_<parent> = sat.dv_hashkey_hub_<parent>
+       AND dlt.dv_applied_timestamp = sat.dv_applied_timestamp
+)
+
+UNION ALL
+
+-- Part 2: COPY timeline correction (scenario 4 — bookend condition)
+SELECT DISTINCT stg.dv_tenant_id, sat.dv_hashkey_hub_<parent>, stg.dv_load_timestamp,
+                next_xts.dv_applied_timestamp, stg.dv_recordsource, sat.dv_hashdiff,
+                'copy' AS dv_xts_event, sat.<business_columns>
+FROM staged.<source> stg
+INNER JOIN <vault_schema>.<satellite> sat
+    ON stg.dv_hashkey_hub_<parent> = sat.dv_hashkey_hub_<parent>
+INNER JOIN next_xts
+    ON stg.dv_hashkey_hub_<parent> = next_xts.dv_hashkey_hub_<parent>
+INNER JOIN previous_xts
+    ON stg.dv_hashkey_hub_<parent> = previous_xts.dv_hashkey_hub_<parent>
+   AND previous_xts.dv_hashdiff = next_xts.dv_hashdiff  -- bookend condition
+WHERE EXISTS (
+    SELECT 1 FROM staged.<source> dlt
+    WHERE NOT EXISTS (
+        SELECT 1 FROM previous_xts xts
+        WHERE xts.dv_hashkey_hub_<parent> = dlt.dv_hashkey_hub_<parent>
+          AND xts.dv_hashdiff = dlt.dv_hashdiff_<satellite>
+    )
+    AND stg.dv_hashkey_hub_<parent> = dlt.dv_hashkey_hub_<parent>
+)
+AND NOT EXISTS (
+    SELECT 1 FROM staged.<source> dlt
+    INNER JOIN <vault_schema>.<satellite> sat
+        ON dlt.dv_hashkey_hub_<parent> = sat.dv_hashkey_hub_<parent>
+       AND dlt.dv_applied_timestamp = sat.dv_applied_timestamp
+);
+```
+
+### Normal satellite load (run when SWITCH = FALSE)
+
+```sql
+INSERT INTO <vault_schema>.<satellite>
+    (dv_tenant_id, dv_hashkey_hub_<parent>, dv_load_timestamp, dv_applied_timestamp,
+     dv_recordsource, dv_hashdiff, dv_xts_event, <business_columns>)
+SELECT DISTINCT dv_tenant_id, dv_hashkey_hub_<parent>, dv_load_timestamp, dv_applied_timestamp,
+                dv_recordsource, dv_hashdiff_<satellite> AS dv_hashdiff,
+                'insert' AS dv_xts_event, <business_columns>
+FROM staged.<source> stg
+WHERE NOT EXISTS (
+    SELECT 1 FROM (
+        SELECT dv_hashkey_hub_<parent>, dv_hashdiff,
+               RANK() OVER (PARTITION BY dv_hashkey_hub_<parent>
+                            ORDER BY dv_applied_timestamp DESC, dv_load_timestamp DESC) AS dv_rnk
+        FROM <vault_schema>.<satellite>
+        QUALIFY dv_rnk = 1
+    ) cur
+    WHERE stg.dv_hashkey_hub_<parent> = cur.dv_hashkey_hub_<parent>
+      AND stg.dv_hashdiff_<satellite> = cur.dv_hashdiff
+);
+```
+
+---
+
+## Supernova Dynamic Table templates
+
+Use this section when generating artefacts for the `/dv-supernova` skill.
+
+**Critical rule:** All joins from the versions DT to satellite tables must be equi-joins (`sat.dv_applieddate = versions.startdate`). Range joins block INCREMENTAL DT refresh.
+
+### Layer 3a — Versions DT (hub with satellites)
+
+```sql
+CREATE OR REPLACE DYNAMIC TABLE supernova.dt_<hub>_versions
+    TARGET_LAG = DOWNSTREAM
+    WAREHOUSE  = <wh>
+AS
+WITH twine AS (
+    SELECT dv_tenantid, dv_hashkey_<hub>, dv_applieddate AS startdate
+    FROM <vault_schema>.<sat_1> WHERE dv_recsource <> 'GHOST'
+    UNION ALL
+    SELECT dv_tenantid, dv_hashkey_<hub>, dv_applieddate AS startdate
+    FROM <vault_schema>.<sat_2> WHERE dv_recsource <> 'GHOST'
+    -- one UNION ALL block per additional satellite
+),
+group_by AS (
+    SELECT dv_tenantid, dv_hashkey_<hub>, startdate FROM twine GROUP BY 1, 2, 3
+)
+SELECT hub.<bk_column>, grp.dv_tenantid, grp.dv_hashkey_<hub>, grp.startdate,
+    COALESCE(
+        DATEADD(seconds, -1, LEAD(grp.startdate) OVER (PARTITION BY grp.dv_hashkey_<hub>
+                                                        ORDER BY grp.startdate)),
+        TO_TIMESTAMP('9999-12-31 23:59:59')
+    ) AS enddate
+FROM group_by grp
+INNER JOIN <vault_schema>.<hub> hub ON grp.dv_hashkey_<hub> = hub.dv_hashkey_<hub>;
+```
+
+### Layer 3a — Versions DT (hub with no satellites)
+
+```sql
+CREATE OR REPLACE DYNAMIC TABLE supernova.dt_<hub>_versions
+    TARGET_LAG = DOWNSTREAM
+    WAREHOUSE  = <wh>
+AS
+SELECT <bk_column>, dv_tenantid, dv_hashkey_<hub>,
+       dv_applieddate                      AS startdate,
+       TO_TIMESTAMP('9999-12-31 23:59:59') AS enddate
+FROM <vault_schema>.<hub>;
+```
+
+### Layer 3b — Supernova hub DT
+
+```sql
+CREATE OR REPLACE DYNAMIC TABLE supernova.dt_supernova_<hub>
+    TARGET_LAG = '1 minute'
+    WAREHOUSE  = <wh>
+AS
+WITH leaf_<sat_1> AS (
+    SELECT s.*,
+        COALESCE(LEAD(s.dv_applieddate) OVER (PARTITION BY s.dv_hashkey_<hub>
+                                              ORDER BY s.dv_applieddate),
+                 TO_TIMESTAMP('9999-12-31 23:59:59')) AS dv_applieddate_end
+    FROM <vault_schema>.<sat_1> s
+),
+leaf_<sat_2> AS (
+    SELECT s.*,
+        COALESCE(LEAD(s.dv_applieddate) OVER (PARTITION BY s.dv_hashkey_<hub>
+                                              ORDER BY s.dv_applieddate),
+                 TO_TIMESTAMP('9999-12-31 23:59:59')) AS dv_applieddate_end
+    FROM <vault_schema>.<sat_2> s
+)
+SELECT hub.dv_tenantid, hub.dv_hashkey_<hub>, hub.startdate, hub.enddate, hub.<bk_column>,
+       s1.<sat1_cols>,
+       s2.<sat2_cols>
+FROM supernova.dt_<hub>_versions hub
+LEFT JOIN leaf_<sat_1> s1
+    ON hub.dv_hashkey_<hub> = s1.dv_hashkey_<hub> AND s1.dv_applieddate = hub.startdate
+LEFT JOIN leaf_<sat_2> s2
+    ON hub.dv_hashkey_<hub> = s2.dv_hashkey_<hub> AND s2.dv_applieddate = hub.startdate;
+```
+
+### Layer 4 — Extended Supernova DT
+
+```sql
+CREATE OR REPLACE DYNAMIC TABLE supernova.dt_xsn_supernova_<hub>
+    TARGET_LAG = '1 minute'
+    WAREHOUSE  = <wh>
+AS
+SELECT *,
+    CASE
+        WHEN <metric_col> > 50000 THEN 'high'
+        WHEN <metric_col> > 10000 THEN 'medium'
+        ELSE 'low'
+    END AS <tier_column>
+    -- add further computed attributes
+FROM supernova.dt_supernova_<hub>;
+```
+
+### Layer 5 — Filtered delivery view
+
+```sql
+CREATE OR REPLACE VIEW information_marts.v_filtered_<hub> AS
+SELECT * FROM supernova.dt_xsn_supernova_<hub>
+WHERE dv_tenantid = '<tenant>';
+```
+
+---
+
+## Activity Schema BV satellite
+
+Use this section when generating artefacts for the `/dv-bv-activity-schema` skill.
+
+### BV satellite DDL — `SAT_BV_NH_{ENTITY}_STREAM`
+
+```sql
+CREATE OR REPLACE TRANSIENT TABLE <schema>.SAT_BV_NH_<ENTITY>_STREAM
+(
+    dv_tenant_id              VARCHAR(20)   NOT NULL,
+    dv_hashkey_hub_<entity>  BINARY(20)    NOT NULL,
+    dv_load_timestamp        TIMESTAMP_NTZ NOT NULL,
+    dv_applied_timestamp     TIMESTAMP_NTZ NOT NULL,
+    dv_recordsource          VARCHAR(255)  NOT NULL,
+    dv_taskid                VARCHAR(40)   NOT NULL,
+    dv_jiraid                VARCHAR(40)   NOT NULL,
+    dv_sid                   INT           AUTOINCREMENT(0,1),
+    <bk_column>              VARCHAR(50),
+    -- Activity Schema columns
+    activity_id              VARCHAR(50)   NOT NULL,
+    activity                 VARCHAR(50)   NOT NULL,
+    anonymous_customer_id    VARCHAR(50)   NULL,
+    feature_json             VARIANT       NOT NULL,
+    revenue_impact           NUMBER(18,2)  NULL,
+    link                     VARCHAR(255)  NULL,
+    CONSTRAINT pk_sat_bv_nh_<entity>_stream
+        PRIMARY KEY (dv_hashkey_hub_<entity>, dv_load_timestamp) NOT ENFORCED
+)
+DATA_RETENTION_TIME_IN_DAYS = 7;
+
+-- Ghost record
+INSERT INTO <schema>.SAT_BV_NH_<ENTITY>_STREAM
+    (dv_tenant_id, dv_hashkey_hub_<entity>, dv_load_timestamp, dv_applied_timestamp,
+     dv_recordsource, dv_taskid, dv_jiraid, activity_id, activity, feature_json, revenue_impact, link)
+SELECT '', TO_BINARY(REPEAT('0', 40)),
+    TO_TIMESTAMP('1900-01-01 00:00:00'), TO_TIMESTAMP('1900-01-01 00:00:00'),
+    'GHOST', 'GHOST', 'GHOST', 'GHOST', 'GHOST', PARSE_JSON('{}'), 0, 'GHOST';
+```
+
+**No source badge** on the BV satellite — it is multi-source by definition.
+**`revenue_impact` is nullable** — only populated for activities with a direct financial impact.
+
+### BV staging transformation view — `stg_bv_{entity}_activity`
+
+```sql
+CREATE OR REPLACE VIEW <schema>.stg_bv_<entity>_activity AS
+SELECT
+    dv_tenant_id,
+    dv_hashkey_hub_<entity>,
+    dv_load_timestamp,
+    dv_applied_timestamp,
+    dv_recordsource,
+    dv_taskid,
+    dv_jiraid,
+    <bk_column>,
+    PARSE_JSON(dv_object):'<event_id_field>'::TEXT                      AS activity_id,
+    CASE
+        WHEN PARSE_JSON(dv_object):'<event_field>'::TEXT = '<code_1>'  THEN '<activity_1>'
+        WHEN PARSE_JSON(dv_object):'<event_field>'::TEXT = '<code_2>'  THEN '<activity_2>'
+    END                                                                 AS activity,
+    NULL::VARCHAR(50)                                                   AS anonymous_customer_id,
+    -- OBJECT_CONSTRUCT enforces authoritative-attributes-only rule (AS spec)
+    CASE
+        WHEN PARSE_JSON(dv_object):'<event_field>'::TEXT = '<code_1>'
+            THEN OBJECT_CONSTRUCT('<attr_1>', PARSE_JSON(dv_object):'<path_1>')
+        WHEN PARSE_JSON(dv_object):'<event_field>'::TEXT = '<code_2>'
+            THEN OBJECT_CONSTRUCT('<attr_2a>', PARSE_JSON(dv_object):'<path_2a>',
+                                  '<attr_2b>', PARSE_JSON(dv_object):'<path_2b>')
+        ELSE OBJECT_CONSTRUCT()
+    END                                                                 AS feature_json,
+    CASE
+        WHEN PARSE_JSON(dv_object):'<event_field>'::TEXT IN ('<fin_code_1>', '<fin_code_2>')
+            THEN PARSE_JSON(dv_object):'<amount_path>'::FLOAT
+        ELSE NULL
+    END                                                                 AS revenue_impact,
+    NULL::VARCHAR(255)                                                  AS link
+FROM <schema>.SAT_NH_RV_<ENTITY>_<BADGE>
+WHERE PARSE_JSON(dv_object):'<event_field>'::TEXT IN ('<code_1>', '<code_2>');
+```
+
+**Rule:** always use `OBJECT_CONSTRUCT` — never pass `dv_object` or a sub-path directly as `feature_json`.
+
+### Stream on BV staging view
+
+```sql
+CREATE OR REPLACE STREAM <schema>.str_bv_<entity>_activity_to_sat_bv_nh_<entity>_stream
+ON VIEW <schema>.stg_bv_<entity>_activity
+APPEND_ONLY = TRUE
+SHOW_INITIAL_ROWS = TRUE;
+```
+
+### Triggered task — RV to BV
+
+```sql
+CREATE OR REPLACE TASK <schema>.tsk_bv_<entity>_activity_to_sat_bv_nh_<entity>_stream
+    WAREHOUSE = <wh>
+    WHEN SYSTEM$STREAM_HAS_DATA('<schema>.str_bv_<entity>_activity_to_sat_bv_nh_<entity>_stream')
+AS
+INSERT INTO <vault_schema>.SAT_BV_NH_<ENTITY>_STREAM
+    (dv_tenant_id, dv_hashkey_hub_<entity>, dv_load_timestamp, dv_applied_timestamp,
+     dv_recordsource, dv_taskid, dv_jiraid, <bk_column>,
+     activity_id, activity, anonymous_customer_id, feature_json, revenue_impact, link)
+SELECT dv_tenant_id, dv_hashkey_hub_<entity>, dv_load_timestamp, dv_applied_timestamp,
+       dv_recordsource, dv_taskid, dv_jiraid, <bk_column>,
+       activity_id, activity, anonymous_customer_id, feature_json, revenue_impact, link
+FROM <schema>.str_bv_<entity>_activity_to_sat_bv_nh_<entity>_stream;
+
+ALTER TASK <schema>.tsk_bv_<entity>_activity_to_sat_bv_nh_<entity>_stream RESUME;
+```
+
+### Per-activity IM Dynamic Table
+
+```sql
+CREATE OR REPLACE DYNAMIC TABLE <im_schema>.dt_<entity>_stream_<activity>
+    TARGET_LAG = DOWNSTREAM
+    WAREHOUSE  = <wh>
+AS
+WITH activity_agg AS (
+    SELECT <bk_column>, COUNT(*) AS activity_count
+    FROM <vault_schema>.SAT_BV_NH_<ENTITY>_STREAM
+    WHERE activity = '<activity>'
+    GROUP BY 1
+)
+SELECT
+    bv.*,
+    ROW_NUMBER() OVER (PARTITION BY bv.<bk_column>, bv.activity
+                       ORDER BY bv.dv_applied_timestamp)                    AS activity_occurrence,
+    COALESCE(LAG(bv.dv_applied_timestamp)  OVER (PARTITION BY bv.<bk_column>, bv.activity
+                                           ORDER BY bv.dv_applied_timestamp), '1900-01-01'::DATE) AS activity_previous_at,
+    COALESCE(LEAD(bv.dv_applied_timestamp) OVER (PARTITION BY bv.<bk_column>, bv.activity
+                                           ORDER BY bv.dv_applied_timestamp), '9999-12-31'::DATE) AS activity_repeated_at,
+    agg.activity_count
+FROM <vault_schema>.SAT_BV_NH_<ENTITY>_STREAM bv
+INNER JOIN activity_agg agg ON bv.<bk_column> = agg.<bk_column>
+WHERE bv.activity = '<activity>';
 ```
 
 ---

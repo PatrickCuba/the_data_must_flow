@@ -25,11 +25,11 @@ The badge is the **system**, not the table. `SAPBW_COMM_CUSTOMER` and `SAPBW_RET
 |---|---|---|
 | Hub | `HUB_` | `HUB_PARTY` |
 | RV Standard Link | `LNK_RV_` | `LNK_RV_CUSTOMER_ACCOUNT_PRODUCT` |
-| RV Same-As Link | `LNK_SA_RV_` | `LNK_SA_RV_MAP_MDM_ACCOUNT` |
-| RV Hierarchical Link | `LNK_HY_RV_` | `LNK_HY_RV_ZOHO_EMPLOYEE_MANAGER` |
-| RV Non-Historized Link | `LNK_NH_RV_` | `LNK_NH_RV_ZOHO_EMPLOYEE_ACCOUNT` |
+| RV Same-As Link | `LNK_RV_SA_` | `LNK_RV_SA_CUSTOMER_MATCH` |
+| RV Hierarchical Link | `LNK_RV_HY_` | `LNK_RV_HY_EMPLOYEE_MANAGER` |
+| RV Non-Historized Link | `LNK_NH_RV_` | `LNK_NH_RV_EMPLOYEE_ACCOUNT` |
 | BV Standard Link | `LNK_BV_` | `LNK_BV_CARD_ACCOUNT_ASSIGNMENT` |
-| Same-as link | `SAL_` | `SAL_CUSTOMER` |
+| BV Same-As Link | `LNK_BV_SA_` | `LNK_BV_SA_CUSTOMER_GOLDEN` |
 | PIT table | `PIT_` | `PIT_PARTY` |
 | Bridge table | `BDG_` | `BDG_PARTYACCOUNT_DAILY` |
 | Current view | `VC_` | `VC_SAT_RV_HUB_SAPBW_COMM_CUSTOMER` |
@@ -37,6 +37,13 @@ The badge is the **system**, not the table. `SAPBW_COMM_CUSTOMER` and `SAPBW_RET
 | IM dimension | `DIM_` | `DIM_CUSTOMER` |
 | IM fact | `FACT_` | `FACT_ORDER` |
 | IM audit | `AUDIT_` | `AUDIT_CUSTOMER` |
+| Activity Schema per-activity DT | `dt_{entity}_stream_{activity}` | `dt_customer_stream_debit_account` |
+| Activity Schema enriched DT | `dt_{entity}_stream_enriched` | `dt_customer_stream_enriched` |
+| Supernova hub versions DT | `dt_{hub}_versions` | `dt_hub_account_versions` |
+| Supernova link versions DT | `dt_{link}_versions` | `dt_lnk_account_customer_versions` |
+| Supernova hub DT | `dt_supernova_{hub}` | `dt_supernova_hub_account` |
+| Supernova link DT | `dt_supernova_{link}` | `dt_supernova_lnk_account_customer` |
+| Extended Supernova DT | `dt_xsn_supernova_{hub_or_link}` | `dt_xsn_supernova_hub_account` |
 | Source staging | `STG_` | `STG_SAPBW_COMM_CUSTOMER` |
 
 ## Prohibited Prefixes
@@ -46,7 +53,9 @@ The badge is the **system**, not the table. `SAPBW_COMM_CUSTOMER` and `SAPBW_RET
 | `BRDG_` | `BDG_` |
 | `BRIDGE_` | `BDG_` |
 | `LNK_<name>` (no vault layer) | `LNK_RV_<name>` or `LNK_BV_<name>` |
-| `SAT_<PARENT>_<CONTEXT>` (generic, no RV) | `SAT_RV_HUB_{badge}_{file}` |
+| `SAT_<PARENT>_<CONTEXT>` (generic, no RV/BV) | `SAT_RV_<hub\|lnk>_{badge}_{file}` or `SAT_BV_{concept}` |
+| `SAL_<entity>` | `LNK_RV_SA_<name>` (same-as links use link prefix) |
+| `SAT_BV_HUB_<parent>_<concept>` | `SAT_BV_<concept>` (no parent_type in BV sats) |
 
 ---
 
@@ -71,13 +80,15 @@ Source badge (`{badge}`) and source file (`{file}`) are mandatory in every RV sa
 
 ## Business Vault Satellite Patterns
 
-BV satellites use a business `concept_name` instead of `{badge}_{file}`.
+BV satellites use a business `concept_name` instead of `{badge}_{file}`. No parent_type in BV satellite names.
 
 | Type | Pattern | Example |
 |---|---|---|
-| BV Standard | `SAT_BV_{concept_name}` | `SAT_BV_CREDITSCORE` |
+| BV Standard | `SAT_BV_{concept_name}` | `SAT_BV_CUSTOMER_CREDIT_SCORE` |
 | BV Multi-Active | `SAT_MA_BV_{concept_name}` | `SAT_MA_BV_GRANDFATHERING_CARDS` |
 | BV Non-Historized | `SAT_NH_BV_{concept_name}` | `SAT_NH_BV_PARTY_ACTIVITY_STREAM` |
+| BV Effectivity | `SAT_EF_BV_{concept_name}` | `SAT_EF_BV_CUSTOMER_PRODUCT_ELIGIBILITY` |
+| Activity Schema BV satellite | `SAT_BV_NH_{ENTITY}_STREAM` | `SAT_BV_NH_CUSTOMER_STREAM` |
 
 ---
 
@@ -87,6 +98,8 @@ BV satellites use a business `concept_name` instead of `{badge}_{file}`.
 |---|---|---|
 | Source staging | `STG_{badge}_{file}` | `STG_SAPBW_COMM_CUSTOMER` |
 | BV staging | `STG_BV_{concept_name}` | `STG_BV_CREDITSCORE` |
+| Activity Schema BV transformation view | `stg_bv_{entity}_activity` | `stg_bv_customer_activity` |
+| Activity Schema stream on BV view | `str_bv_{entity}_activity_to_sat_bv_nh_{entity}_stream` | `str_bv_customer_activity_to_sat_bv_nh_customer_stream` |
 | Effectivity secondary | `STG_EF_{badge}_{file}` | `STG_EF_MDM_ACCOUNT_MAP` |
 | Status tracking secondary | `STG_ST_{badge}_{file}_{parent_type}_{parent}` | `STG_ST_SAPBW_COMM_CUSTOMER_HUB_PARTY` |
 | Record tracking secondary | `STG_RT_{file}_{parent_type}_{parent}_{hashkey}` | `STG_RT_COMM_CUSTOMER_HUB_PARTY_DV_HASHKEY_HUB_PARTY` |
@@ -100,7 +113,7 @@ BV satellites use a business `concept_name` instead of `{badge}_{file}`.
 |---------|-------------|-----|
 | Hub hash key | `dv_hashkey_hub_<name>` | `<NAME>_HK` |
 | Link hash key | `dv_hashkey_lnk_<name>` | `<NAME>_HK` |
-| SAL hash key | `dv_hashkey_sal_<entity>` | `SAL_<ENTITY>_HK` |
+| Same-As Link hash key | `dv_hashkey_lnk_rv_sa_<name>` | `SAL_<ENTITY>_HK` |
 | Hash diff | `dv_hashdiff` | `HDIFF`, `HASH_DIFF` |
 | Load timestamp | `dv_load_timestamp` | `LDTS`, `LOAD_DATE` |
 | Applied timestamp | `dv_applied_timestamp` | `RDTS`, `BATCH_DATE` |
@@ -118,6 +131,24 @@ BV satellites use a business `concept_name` instead of `{badge}_{file}`.
 | XTS target (XTS only) | `dv_record_target` | — |
 | **End-date** | **DOES NOT EXIST** | `LEDTS` |
 | **Active flag** | **DOES NOT EXIST in effectivity sats** | `ACTIVE_FLAG` |
+
+---
+
+## Hash Algorithm Configuration
+
+The hash algorithm is set once per project and applies to ALL hashkeys and hashdiffs.
+
+| Algorithm | Snowflake function | Column type | Ghost record | Hex chars |
+|---|---|---|---|---|
+| MD5 | `MD5_BINARY(...)` | `BINARY(16)` | `TO_BINARY(REPEAT('0', 32), 'HEX')` | 32 |
+| **SHA1** (default) | `SHA1_BINARY(...)` | `BINARY(20)` | `TO_BINARY(REPEAT('0', 40), 'HEX')` | 40 |
+| SHA256 | `SHA2_BINARY(...)` | `BINARY(32)` | `TO_BINARY(REPEAT('0', 64), 'HEX')` | 64 |
+
+**Rules:**
+- Never mix algorithms within a vault
+- `BINARY(n)` size must match the algorithm everywhere — DDL, ghost records, COALESCE defaults in PITs
+- Ghost record formula: `TO_BINARY(REPEAT('0', n * 2), 'HEX')` where `n` = algorithm output bytes
+- Staging views must use the matching function consistently
 
 ---
 
