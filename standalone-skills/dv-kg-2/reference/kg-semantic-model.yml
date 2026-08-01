@@ -1,0 +1,219 @@
+# KG Catalog — Semantic View Template (Standalone)
+#
+# A semantic view over the Knowledge Graph views deployed by /dv-kg-2.
+# Works for any Data Vault project regardless of tooling.
+#
+# Tables: KG_NODE_V, KG_EDGE_V, KG_ADJACENCY, KG_PROPERTY
+#
+# Deployment (the ONLY valid syntax):
+#   CALL SYSTEM$CREATE_SEMANTIC_VIEW_FROM_YAML(
+#     '<KG_DB>.<KG_SCHEMA>',
+#     $$<this file content>$$
+#   );
+#
+# Placeholders to replace at generation time:
+#   {KG_DB}     — target database (e.g. LIB_DEV01_EDW)
+#   {KG_SCHEMA} — target schema (e.g. KG)
+
+name: KG_SEMANTIC_MODEL
+description: Knowledge Graph catalog for a Data Vault. Discover entities, relationships, and properties.
+
+tables:
+  - name: KG_NODE_V
+    base_table:
+      database: "{KG_DB}"
+      schema: "{KG_SCHEMA}"
+      table: KG_NODE_V
+    primary_key:
+      columns:
+        - NODE_KEY
+    description: Business entities in the vault (one row per hub).
+    synonyms:
+      - nodes
+      - hubs
+      - entities
+    dimensions:
+      - name: NODE_KEY
+        description: Entity identifier (hub table name, e.g. HUB_CUSTOMER)
+        expr: NODE_KEY
+        data_type: VARCHAR(16777216)
+        synonyms: [entity, hub, node]
+      - name: ENTITY_LABEL
+        description: Business name for the entity (e.g. Customer, Account)
+        expr: ENTITY_LABEL
+        data_type: VARCHAR(16777216)
+        synonyms: [name, label, title]
+      - name: GRAIN
+        description: What each row represents (derived from business keys)
+        expr: GRAIN
+        data_type: VARCHAR(16777216)
+      - name: PII_PRESENT
+        description: Whether any satellite attached to this entity has PII
+        expr: PII_PRESENT
+        data_type: BOOLEAN
+        synonyms: [has PII, personal data]
+    facts:
+      - name: PROPERTY_COUNT
+        description: Number of satellite tables (properties) attached to this entity
+        expr: PROPERTY_COUNT
+        data_type: "NUMBER(38,0)"
+        synonyms: [satellite count, attribute sets]
+    metrics:
+      - name: TOTAL_ENTITIES
+        description: Total number of business entities in the vault
+        expr: COUNT(NODE_KEY)
+      - name: PII_ENTITY_COUNT
+        description: Number of entities with PII data
+        expr: COUNT_IF(PII_PRESENT = TRUE)
+
+  - name: KG_EDGE_V
+    base_table:
+      database: "{KG_DB}"
+      schema: "{KG_SCHEMA}"
+      table: KG_EDGE_V
+    primary_key:
+      columns:
+        - EDGE_KEY
+    description: Relationships in the vault (one row per link).
+    synonyms:
+      - edges
+      - links
+      - relationships
+    dimensions:
+      - name: EDGE_KEY
+        description: Relationship identifier (link table name)
+        expr: EDGE_KEY
+        data_type: VARCHAR(16777216)
+        synonyms: [link, relationship, connection]
+      - name: RELATIONSHIP_LABEL
+        description: Business name for the relationship
+        expr: RELATIONSHIP_LABEL
+        data_type: VARCHAR(16777216)
+        synonyms: [name, label]
+      - name: RELATIONSHIP_SEMANTICS
+        description: Nature of relationship (hierarchy, same-as, role-playing)
+        expr: RELATIONSHIP_SEMANTICS
+        data_type: VARCHAR(16777216)
+        synonyms: [type, kind]
+    facts:
+      - name: ARITY
+        description: Number of entities this relationship connects (2=binary, 3+=n-ary)
+        expr: ARITY
+        data_type: "NUMBER(38,0)"
+    metrics:
+      - name: TOTAL_RELATIONSHIPS
+        description: Total number of relationships in the vault
+        expr: COUNT(EDGE_KEY)
+
+  - name: KG_ADJACENCY
+    base_table:
+      database: "{KG_DB}"
+      schema: "{KG_SCHEMA}"
+      table: KG_ADJACENCY
+    description: Directed adjacency for graph traversal. Both directions present (A to B and B to A).
+    synonyms:
+      - graph
+      - connections
+      - paths
+      - traversal
+    dimensions:
+      - name: FROM_NODE
+        description: Starting entity in this directed edge
+        expr: FROM_NODE
+        data_type: VARCHAR(16777216)
+        synonyms: [source, origin]
+      - name: TO_NODE
+        description: Ending entity in this directed edge
+        expr: TO_NODE
+        data_type: VARCHAR(16777216)
+        synonyms: [target, destination]
+      - name: VIA_EDGE
+        description: The relationship (link) connecting from_node to to_node
+        expr: VIA_EDGE
+        data_type: VARCHAR(16777216)
+        synonyms: [through, via link]
+      - name: ADJ_RELATIONSHIP_LABEL
+        description: Business name of the connecting relationship
+        expr: RELATIONSHIP_LABEL
+        data_type: VARCHAR(16777216)
+
+  - name: KG_PROPERTY
+    base_table:
+      database: "{KG_DB}"
+      schema: "{KG_SCHEMA}"
+      table: KG_PROPERTY
+    description: Satellites attached to entities or relationships. One row per satellite.
+    synonyms:
+      - properties
+      - satellites
+      - attributes
+    dimensions:
+      - name: PROPERTY_KEY
+        description: Satellite table name
+        expr: PROPERTY_KEY
+        data_type: VARCHAR(16777216)
+        synonyms: [satellite, attribute set]
+      - name: ATTACHED_TO
+        description: The entity (node_key) or relationship (edge_key) this property describes
+        expr: ATTACHED_TO
+        data_type: VARCHAR(16777216)
+        synonyms: [belongs to, parent]
+      - name: ATTACHED_TO_TYPE
+        description: Whether this property is on an entity (NODE) or relationship (EDGE)
+        expr: ATTACHED_TO_TYPE
+        data_type: VARCHAR(16777216)
+      - name: SOURCE_SYSTEM
+        description: Source system identifier
+        expr: SOURCE_SYSTEM
+        data_type: VARCHAR(16777216)
+        synonyms: [badge, origin system]
+      - name: SAT_DESCRIPTION
+        description: What this satellite captures in the business domain
+        expr: DESCRIPTION
+        data_type: VARCHAR(16777216)
+    metrics:
+      - name: TOTAL_PROPERTIES
+        description: Total number of satellites in the vault
+        expr: COUNT(PROPERTY_KEY)
+
+relationships:
+  - name: PROPERTY_TO_NODE
+    left_table: KG_PROPERTY
+    right_table: KG_NODE_V
+    relationship_columns:
+      - left_column: ATTACHED_TO
+        right_column: NODE_KEY
+    relationship_type: many_to_one
+
+  - name: ADJACENCY_TO_NODE
+    left_table: KG_ADJACENCY
+    right_table: KG_NODE_V
+    relationship_columns:
+      - left_column: FROM_NODE
+        right_column: NODE_KEY
+    relationship_type: many_to_one
+
+verified_queries:
+  - name: list_entities
+    question: "What business entities exist in the vault?"
+    sql: "SELECT NODE_KEY, ENTITY_LABEL, PROPERTY_COUNT FROM {KG_DB}.{KG_SCHEMA}.KG_NODE_V ORDER BY PROPERTY_COUNT DESC"
+    verified_by: "(STEWARD = dv_kg_2)"
+    verified_at: 1753800000
+
+  - name: pii_entities
+    question: "Which entities carry PII?"
+    sql: "SELECT NODE_KEY, ENTITY_LABEL FROM {KG_DB}.{KG_SCHEMA}.KG_NODE_V WHERE PII_PRESENT = TRUE"
+    verified_by: "(STEWARD = dv_kg_2)"
+    verified_at: 1753800000
+
+  - name: customer_connections
+    question: "What is connected to Customer?"
+    sql: "SELECT DISTINCT TO_NODE, VIA_EDGE, RELATIONSHIP_LABEL FROM {KG_DB}.{KG_SCHEMA}.KG_ADJACENCY WHERE FROM_NODE ILIKE '%CUSTOMER%'"
+    verified_by: "(STEWARD = dv_kg_2)"
+    verified_at: 1753800000
+
+  - name: entity_properties
+    question: "What properties describe an entity?"
+    sql: "SELECT PROPERTY_KEY, DESCRIPTION, SOURCE_SYSTEM FROM {KG_DB}.{KG_SCHEMA}.KG_PROPERTY WHERE ATTACHED_TO ILIKE '%CUSTOMER%'"
+    verified_by: "(STEWARD = dv_kg_2)"
+    verified_at: 1753800000

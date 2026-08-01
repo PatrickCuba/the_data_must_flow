@@ -1,0 +1,5 @@
+{
+  "name": "standalone-kg",
+  "version": "0.1.0",
+  "description": "Deploy a Knowledge Graph over any existing Data Vault — no DVOS required. Discovers vault topology from INFORMATION_SCHEMA, builds KG views, and optionally generates a data semantic view, Cortex Analyst, and Agent template."
+}
