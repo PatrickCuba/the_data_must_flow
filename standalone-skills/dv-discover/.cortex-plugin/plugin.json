@@ -1,0 +1,5 @@
+{
+  "name": "standalone-discover",
+  "version": "1.0.0",
+  "description": "Profile live Snowflake source tables, detect relationships, and propose a complete Data Vault model (hubs, links, satellites). No DVOS or other skills required."
+}
